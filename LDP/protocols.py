@@ -4,10 +4,11 @@ from numba import jit
 import xxhash
 from sys import maxsize
 
-
 # [1] Erlingsson, Pihur, and Korolova (2014) "RAPPOR: Randomized aggregatable privacy-preserving ordinal response" (ACM CCS).
 # [2] Arcolezi et al (2022) "Improving the Utility of Locally Differentially Private Protocols for Longitudinal and Multidimensional Frequency Estimates" (Digital Communications and Networks).
 # [3] Ding, Kulkarni, and Yekhanin (2017) "Collecting telemetry data privately." (NeurIPS).
+from numpy import exp
+
 
 @jit(nopython=True)
 def setting_seed(seed):
@@ -534,3 +535,74 @@ def dBitFlipPM_Aggregator(reports, b, d, eps_perm):
     # Re-normalized estimated frequency
     norm_est = np.nan_to_num(est_freq / sum(est_freq))
     return norm_est
+
+
+def OLH_Client(input_datas, k, epsilon):
+    p = exp(epsilon) / (exp(epsilon) + k - 1)
+
+    report_value = (xxhash.xxh32(str(input_datas)).intdigest() % (k-1))
+
+    rnd = np.random.random()
+    if rnd > p:
+        report_value = np.random.randint(0, k)
+
+    return report_value
+
+
+def OLH_Client2(input_datas, n, k, epsilon):
+    p = exp(epsilon) / (exp(epsilon) + k - 1)
+    q = 1-p
+
+    Y = np.zeros(n)
+    for i in range(n):
+        v = input_datas[i]
+        x = (xxhash.xxh32(str(v), seed=i).intdigest() % k)
+        y = x
+
+        p_sample = np.random.random_sample()
+        if p_sample > p - q:
+            y = np.random.randint(0, k)
+        Y[i] = y
+
+    return Y
+
+
+def OLH_Aggregator(perturbed_datas, n, k, epsilon):
+    g = int(round(exp(epsilon))) + 1
+    p = exp(epsilon) / (exp(epsilon) + g - 1)
+
+    global ESTIMATE_DIST
+    ESTIMATE_DIST = np.zeros((k + 1))
+    for i in range(n):
+        for v in range((k + 1)):
+            if perturbed_datas[i] == (xxhash.xxh32(str(v), seed=i).intdigest() % g):
+                ESTIMATE_DIST[v] += 1
+    a = 1.0 * g / (p * g - 1)
+    b = 1.0 * n / (p * g - 1)
+    ESTIMATE_DIST = a * ESTIMATE_DIST - b
+
+    norm_est_freq = np.nan_to_num(ESTIMATE_DIST / sum(ESTIMATE_DIST))
+    return norm_est_freq
+
+def OLH_Aggregator2(reports, n, k, epsilon):
+    # GRR parameters
+    p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
+    q = (1 - p) / (k - 1)
+
+    # Count how many times each value has been reported
+    count_report = np.zeros(k)
+
+    for i in range(n):
+        for v in range(k):
+            if reports[i] == (xxhash.xxh32(str(v), seed=i).intdigest() % k):
+                count_report[v] += 1
+
+    # Ensure non-negativity of estimated frequency
+    est_freq = np.array((count_report - n * q) / (p - q)).clip(0)
+
+    # Re-normalized estimated frequency
+    norm_est_freq = np.nan_to_num(est_freq / sum(est_freq))
+
+    return norm_est_freq
+
+
