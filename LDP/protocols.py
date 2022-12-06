@@ -1,3 +1,4 @@
+import numpy
 import numpy as np
 from numba import jit
 import xxhash
@@ -291,34 +292,33 @@ def SIMPLE_RAPPOR_Client(input_data, k, epsilon):
 
     p = (np.exp(epsilon / 2)) / (np.exp(epsilon / 2) + 1)
 
-    perturbed_bit_vector = []
-    for bit in bit_vector:
+    perturbed_bit_vector = bit_vector.copy()
+    for bit_index in range(len(bit_vector)):
         rnd = np.random.random()
-        if rnd <= p:
-            perturbed_bit_vector.append(bit)
-        else:
-            if bit == 1:
-                perturbed_bit_vector.append(0)
+        if rnd > p:
+            if perturbed_bit_vector[bit_index] == 1:
+                perturbed_bit_vector[bit_index] = 0
             else:
-                perturbed_bit_vector.append(1)
+                perturbed_bit_vector[bit_index] = 1
 
+    perturbed_bit_vector = perturbed_bit_vector.tolist()
     return perturbed_bit_vector
 
 
 def SIMPLE_RAPPOR_Aggregator(perturbed_bit_vectors, epsilon):
-
-    n = len(perturbed_bit_vectors)
+    perturbed_bit_vectors = numpy.array(perturbed_bit_vectors)
+    n = perturbed_bit_vectors[0].size
     p = (np.exp(epsilon / 2)) / (np.exp(epsilon / 2) + 1)
     q = 1 / (np.exp(epsilon / 2) + 1)
 
-    sum_of_perturbed_bit_vectors = perturbed_bit_vectors.sum(axis=0)
+    # Ensure non-negativity of estimated frequency
+    est_freq = (sum(perturbed_bit_vectors) - (n * q) / (n * (p - q)).clip(0))
 
-    est_freq_vector = []
-    for bit in sum_of_perturbed_bit_vectors:
-        estimated_bit = (bit - (n-q)) / (p-q)
-        est_freq_vector.append(estimated_bit)
+    # Re-normalized estimated frequencies
+    norm_est_freq = np.nan_to_num(est_freq / sum(est_freq))
 
-    return est_freq_vector
+    return norm_est_freq
+
 
 # Competitor: L-OSUE [2]
 def L_OSUE_Client(input_sequence, k, eps_perm, eps_1):
