@@ -41,7 +41,6 @@ def GRR_Client(input_data, k, epsilon):
         rnd = np.random.random()
         if rnd <= p:
             return input_data
-
         else:
             return np.random.choice(domain[domain != input_data])
 
@@ -308,15 +307,19 @@ def SIMPLE_RAPPOR_Client(input_data, k, epsilon):
 
 def SIMPLE_RAPPOR_Aggregator(perturbed_bit_vectors, epsilon):
     perturbed_bit_vectors = numpy.array(perturbed_bit_vectors)
-    n = perturbed_bit_vectors[0].size
+    n = 2
     p = (np.exp(epsilon / 2)) / (np.exp(epsilon / 2) + 1)
     q = 1 / (np.exp(epsilon / 2) + 1)
+    perturbed_sum_bit_vector = sum(perturbed_bit_vectors)
+    est_freq_vector = list()
 
-    # Ensure non-negativity of estimated frequency
-    est_freq = (sum(perturbed_bit_vectors) - (n * q) / (n * (p - q)).clip(0))
+    for sum_bit in perturbed_sum_bit_vector:
+        numerator = sum_bit - (n * q)
+        denominator = p - q
+        est_freq_vector.append(numerator / denominator)
 
     # Re-normalized estimated frequencies
-    norm_est_freq = np.nan_to_num(est_freq / sum(est_freq))
+    norm_est_freq = np.nan_to_num(est_freq_vector / sum(est_freq_vector))
 
     return norm_est_freq
 
@@ -540,7 +543,7 @@ def dBitFlipPM_Aggregator(reports, b, d, eps_perm):
 def OLH_Client(input_datas, k, epsilon):
     p = exp(epsilon) / (exp(epsilon) + k - 1)
 
-    report_value = (xxhash.xxh32(str(input_datas)).intdigest() % (k-1))
+    report_value = (xxhash.xxh32(str(input_datas)).intdigest() % (k - 1))
 
     rnd = np.random.random()
     if rnd > p:
@@ -551,7 +554,7 @@ def OLH_Client(input_datas, k, epsilon):
 
 def OLH_Client2(input_datas, n, k, epsilon):
     p = exp(epsilon) / (exp(epsilon) + k - 1)
-    q = 1-p
+    q = 1 - p
 
     Y = np.zeros(n)
     for i in range(n):
@@ -584,6 +587,7 @@ def OLH_Aggregator(perturbed_datas, n, k, epsilon):
     norm_est_freq = np.nan_to_num(ESTIMATE_DIST / sum(ESTIMATE_DIST))
     return norm_est_freq
 
+
 def OLH_Aggregator2(reports, n, k, epsilon):
     # GRR parameters
     p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
@@ -606,3 +610,36 @@ def OLH_Aggregator2(reports, n, k, epsilon):
     return norm_est_freq
 
 
+def OUE_Client(input_data, k, epsilon):
+    bit_vector = np.zeros(k)
+    bit_vector[input_data] = 1
+
+    p = 1 / 2
+    q = 1 / (np.exp(epsilon) + 1)
+
+    perturbed_bit_vector = bit_vector.copy()
+    for bit_index in range(k):
+        if perturbed_bit_vector[bit_index] == 0:
+            rnd = np.random.random()
+            if rnd <= q:
+                perturbed_bit_vector[bit_index] = 1
+        else:
+            rnd = np.random.random()
+            if rnd > p:
+                perturbed_bit_vector[bit_index] = 0
+    return perturbed_bit_vector
+
+
+def OUE_Aggregator(perturbed_bit_vectors, epsilon):
+    n = 2
+    perturbed_sum_bit_vector = sum(perturbed_bit_vectors)
+    est_freq_vector = list()
+
+    for sum_bit in perturbed_sum_bit_vector:
+        numerator = 2 * ((np.exp(epsilon) + 1) * sum_bit - n)
+        denominator = np.exp(epsilon) - 1
+        est_freq_vector.append(numerator / denominator)
+
+    # Re-normalized estimated frequencies
+    norm_est_freq = np.nan_to_num(est_freq_vector / sum(est_freq_vector))
+    return norm_est_freq
