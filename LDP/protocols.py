@@ -1,6 +1,5 @@
 import numpy
 import numpy as np
-from numba import jit
 import xxhash
 from sys import maxsize
 
@@ -9,8 +8,11 @@ from sys import maxsize
 # [3] Ding, Kulkarni, and Yekhanin (2017) "Collecting telemetry data privately." (NeurIPS).
 from numpy import exp
 
+seeds = np.arange(200)
+seed_counter = 0
 
-@jit(nopython=True)
+
+
 def setting_seed(seed):
     """ Function to set seed for reproducibility.
     Calling numpy.random.seed() from interpreted code will 
@@ -89,7 +91,6 @@ def GRR_Aggregator(reports, k, epsilon):
             raise ValueError('k (int) and epsilon (float) need a numerical value.')
 
 
-@jit(nopython=True)
 def UE_Client(input_ue_data, k, p, q):
     """
     Unary Encoding (UE) protocol
@@ -288,7 +289,7 @@ def RAPPOR_Aggregator(ue_reports, eps_perm, eps_1):
 
 def SIMPLE_RAPPOR_Client(input_data, k, epsilon):
     bit_vector = np.zeros(k)
-    bit_vector[input_data] = 1
+    bit_vector[input_data-1] = 1
 
     p = (np.exp(epsilon / 2)) / (np.exp(epsilon / 2) + 1)
 
@@ -540,14 +541,18 @@ def dBitFlipPM_Aggregator(reports, b, d, eps_perm):
     return norm_est
 
 
-def OLH_Client(input_datas, k, epsilon):
+def OLH_Client(input_data, k, epsilon):
+    global seed_counter
+    global seeds
     p = exp(epsilon) / (exp(epsilon) + k - 1)
 
-    report_value = (xxhash.xxh32(str(input_datas)).intdigest() % (k - 1))
+    report_value = (xxhash.xxh32(str(input_data), seed=seeds[seed_counter]).intdigest() % k)
 
     rnd = np.random.random()
     if rnd > p:
         report_value = np.random.randint(0, k)
+
+    seed_counter+=1
 
     return report_value
 
@@ -612,7 +617,7 @@ def OLH_Aggregator2(reports, n, k, epsilon):
 
 def OUE_Client(input_data, k, epsilon):
     bit_vector = np.zeros(k)
-    bit_vector[input_data] = 1
+    bit_vector[input_data-1] = 1
 
     p = 1 / 2
     q = 1 / (np.exp(epsilon) + 1)
