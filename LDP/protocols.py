@@ -12,7 +12,6 @@ seeds = np.arange(200)
 seed_counter = 0
 
 
-
 def setting_seed(seed):
     """ Function to set seed for reproducibility.
     Calling numpy.random.seed() from interpreted code will 
@@ -37,7 +36,7 @@ def GRR_Client(input_data, k, epsilon):
         p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
 
         # Mapping domain size k to the range [0, ..., k-1]
-        domain = np.arange(k)
+        domain = np.arange(1, k+1)
 
         # GRR perturbation function
         rnd = np.random.random()
@@ -289,7 +288,7 @@ def RAPPOR_Aggregator(ue_reports, eps_perm, eps_1):
 
 def SIMPLE_RAPPOR_Client(input_data, k, epsilon):
     bit_vector = np.zeros(k)
-    bit_vector[input_data-1] = 1
+    bit_vector[input_data - 1] = 1
 
     p = (np.exp(epsilon / 2)) / (np.exp(epsilon / 2) + 1)
 
@@ -552,7 +551,7 @@ def OLH_Client(input_data, k, epsilon):
     if rnd > p:
         report_value = np.random.randint(0, k)
 
-    seed_counter+=1
+    seed_counter += 1
 
     return report_value
 
@@ -617,7 +616,7 @@ def OLH_Aggregator2(reports, n, k, epsilon):
 
 def OUE_Client(input_data, k, epsilon):
     bit_vector = np.zeros(k)
-    bit_vector[input_data-1] = 1
+    bit_vector[input_data - 1] = 1
 
     p = 1 / 2
     q = 1 / (np.exp(epsilon) + 1)
