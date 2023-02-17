@@ -1,16 +1,18 @@
 from hmmlearn import hmm
 import numpy as np
-from collections import Counter
 
 
 def isValidPos(i, j, n, m):
-    if (i < 0 or j < 0 or i > n - 1 or j > m - 1):
+    if i < 0 or j < 0 or i > n - 1 or j > m - 1:
         return 0
     return 1
 
 
 # Function that returns all adjacent elements
-def getAdjacent(arr, i, j):
+def getAdjacent(arr, number):
+    i = int(number / 4)
+    j = (number % 4) - 1
+
     # Size of given 2d array
     n = len(arr)
     m = len(arr[0])
@@ -20,122 +22,74 @@ def getAdjacent(arr, i, j):
     v = []
 
     # Checking for all the possible adjacent positions
-    if (isValidPos(i - 1, j - 1, n, m)):
+    if isValidPos(i - 1, j - 1, n, m):
         v.append(arr[i - 1][j - 1])
-    if (isValidPos(i - 1, j, n, m)):
+    if isValidPos(i - 1, j, n, m):
         v.append(arr[i - 1][j])
-    if (isValidPos(i - 1, j + 1, n, m)):
+    if isValidPos(i - 1, j + 1, n, m):
         v.append(arr[i - 1][j + 1])
-    if (isValidPos(i, j - 1, n, m)):
+    if isValidPos(i, j - 1, n, m):
         v.append(arr[i][j - 1])
-    if (isValidPos(i, j + 1, n, m)):
+    if isValidPos(i, j + 1, n, m):
         v.append(arr[i][j + 1])
-    if (isValidPos(i + 1, j - 1, n, m)):
+    if isValidPos(i + 1, j - 1, n, m):
         v.append(arr[i + 1][j - 1])
-    if (isValidPos(i + 1, j, n, m)):
+    if isValidPos(i + 1, j, n, m):
         v.append(arr[i + 1][j])
-    if (isValidPos(i + 1, j + 1, n, m)):
+    if isValidPos(i + 1, j + 1, n, m):
         v.append(arr[i + 1][j + 1])
 
     # Returning the vector
-    return v
-
+    return [x + 1 for x in v]
 
 def hmm_model_GRR(epsilon, k):
     seed = 90
     np.random.seed(seed)
+    row_count = 5
+    column_count = 4
 
     p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
     q = (1 - p) / (k - 1)
 
-    states = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-    observations = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
-    discrete_model = hmm.MultinomialHMM(n_components=9,
+    discrete_model = hmm.MultinomialHMM(n_components=k,
                                         algorithm='viterbi',  # decoder algorithm.
                                         random_state=seed,
                                         n_iter=10,
                                         tol=0.01  # EM convergence threshold (gain in log-likelihood)
                                         )
 
-    discrete_model.startprob_ = np.array(
-        [1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9]
-    )
+    discrete_model.startprob_ = np.full((1, k), 1 / k)[0]
+    adjacent_matrix = np.arange(20).reshape(5, 4)
+    matrix_list = []
+    for i in range(1, k+1):
+        sub_list = []
+        adjacent_elements = getAdjacent(adjacent_matrix, i)
+        for j in range(1, k+1):
+            if j in adjacent_elements or j == i:
+                sub_list.append(1 / (len(adjacent_elements) + 1))
+            else:
+                sub_list.append(0)
+        matrix_list.append(sub_list)
 
-    discrete_model.transmat_ = np.array(
-        [
-            [1 / 4, 1 / 4, 0, 1 / 4, 1 / 4, 0, 0, 0, 0],
-            [1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6, 0, 0, 0],
-            [0, 1 / 4, 1 / 4, 0, 1 / 4, 1 / 4, 0, 0, 0],
-            [1 / 6, 1 / 6, 0, 1 / 6, 1 / 6, 0, 1 / 6, 1 / 6, 0],
-            [1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9],
-            [0, 1 / 6, 1 / 6, 0, 1 / 6, 1 / 6, 0, 1 / 6, 1 / 6],
-            [0, 0, 0, 1 / 4, 1 / 4, 0, 1 / 4, 1 / 4, 0],
-            [0, 0, 0, 1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6],
-            [0, 0, 0, 0, 1 / 4, 1 / 4, 0, 1 / 4, 1 / 4]
-        ]
-    )
-    discrete_model.emissionprob_ = np.array(
-        [
-            [p, q, q, q, q, q, q, q, q],
-            [q, p, q, q, q, q, q, q, q],
-            [q, q, p, q, q, q, q, q, q],
-            [q, q, q, p, q, q, q, q, q],
-            [q, q, q, q, p, q, q, q, q],
-            [q, q, q, q, q, p, q, q, q],
-            [q, q, q, q, q, q, p, q, q],
-            [q, q, q, q, q, q, q, p, q],
-            [q, q, q, q, q, q, q, q, p],
-        ]
-    )
+    discrete_model.transmat_ = np.array(matrix_list)
+
+    matrix_list = []
+    for i in range(k):
+        row_list = []
+        for j in range(k):
+            if i == j:
+                row_list.append(p)
+            else:
+                row_list.append(q)
+        matrix_list.append(row_list)
+
+    discrete_model.emissionprob_ = np.array(matrix_list)
 
     return discrete_model
 
-def hmm_model_GRR_20(epsilon, k):
-    seed = 90
-    np.random.seed(seed)
 
-    p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
-    q = (1 - p) / (k - 1)
+states = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
+observations = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
 
-    states = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-    observations = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-
-    discrete_model = hmm.MultinomialHMM(n_components=9,
-                                        algorithm='viterbi',  # decoder algorithm.
-                                        random_state=seed,
-                                        n_iter=10,
-                                        tol=0.01  # EM convergence threshold (gain in log-likelihood)
-                                        )
-
-    discrete_model.startprob_ = np.array(
-        [1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9]
-    )
-    discrete_model.transmat_ = np.array(
-        [
-            [1 / 4, 1 / 4, 0, 1 / 4, 1 / 4, 0, 0, 0, 0],
-            [1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6, 0, 0, 0],
-            [0, 1 / 4, 1 / 4, 0, 1 / 4, 1 / 4, 0, 0, 0],
-            [1 / 6, 1 / 6, 0, 1 / 6, 1 / 6, 0, 1 / 6, 1 / 6, 0],
-            [1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9],
-            [0, 1 / 6, 1 / 6, 0, 1 / 6, 1 / 6, 0, 1 / 6, 1 / 6],
-            [0, 0, 0, 1 / 4, 1 / 4, 0, 1 / 4, 1 / 4, 0],
-            [0, 0, 0, 1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6],
-            [0, 0, 0, 0, 1 / 4, 1 / 4, 0, 1 / 4, 1 / 4]
-        ]
-    )
-    discrete_model.emissionprob_ = np.array(
-        [
-            [p / 4, p / 4 + q, q, p / 4 + q, p / 4 + q, q, q, q, q],
-            [p / 6 + q, p / 6, p / 6 + q, p / 6 + q, p / 6 + q, p / 6 + q, q, q, q],
-            [q, p / 4 + q, p / 4, q, p / 4 + q, p / 4 + q, q, q, q],
-            [p / 6 + q, p / 6 + q, q, p / 6, p / 6 + q, q, p / 6 + q, p / 6 + q, q], \
-            [p / 9 + q, p / 9 + q, p / 9 + q, p / 9 + q, p / 9, p / 9 + q, p / 9 + q, p / 9 + q, p / 9 + q],
-            [q, p / 6 + q, p / 6 + q, q, p / 6 + q, p / 6, q, p / 6 + q, p / 6 + q],
-            [q, q, q, p / 4 + q, p / 4 + q, q, p / 4, p / 4 + q, q],
-            [q, q, q, p / 6 + q, p / 6 + q, p / 6 + q, p / 6 + q, p / 6, p / 6 + q],
-            [q, q, q, q, p / 4 + q, p / 4 + q, q, p / 4 + q, p / 4],
-        ]
-    )
-
-    return discrete_model
+discrete_model = hmm_model_GRR(1, 20)
