@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from LDP.protocols_estimation_different_grid import grr_estimated_guess
+from LDP.protocols_estimation_different_grid import grr_estimated_guess, rappor_estimated_guess
 
 # Parameters for simulation
 k = 20  # attribute's domain size (grid size)
@@ -26,8 +26,8 @@ for epsilon in epsilon_list:
         grr_report_guess = grr_estimated_guess(users_grid_value_list, k, epsilon)
         temp_probability_of_guess_grr.append(grr_report_guess)
 
-        # rappor_est_freq = rappor_estimated_guess(users_grid_value_list, k, epsilon)
-        # temp_probability_of_guess_rappor.append(rappor_est_freq)
+        #rappor_est_freq = rappor_estimated_guess(users_grid_value_list, k, epsilon)
+        #temp_probability_of_guess_rappor.append(rappor_est_freq)
 
         # oue_est_freq = oue_estimated_guess(users_grid_value_list, k, epsilon)
         # temp_probability_of_guess_oue.append(oue_est_freq)
@@ -40,6 +40,7 @@ for epsilon in epsilon_list:
     #probability_of_guess_oue.append(sum(temp_probability_of_guess_oue) / len(temp_probability_of_guess_oue))
     #probability_of_guess_olh.append(sum(temp_probability_of_guess_olh) / len(temp_probability_of_guess_olh))
 
+print(probability_of_guess_grr)
 plt.ylim(0, 1)
 plt.xlim(min(epsilon_list), max(epsilon_list))
 plt.plot(epsilon_list, probability_of_guess_grr, label='GRR', color='red')
