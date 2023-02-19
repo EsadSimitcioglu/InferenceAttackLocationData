@@ -42,30 +42,24 @@ def getAdjacent(arr, number):
     # Returning the vector
     return [x + 1 for x in v]
 
+
 def hmm_model_GRR(epsilon, k):
     seed = 90
-    np.random.seed(seed)
-    row_count = 5
-    column_count = 4
-
     p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
     q = (1 - p) / (k - 1)
-
 
     discrete_model = hmm.MultinomialHMM(n_components=k,
                                         algorithm='viterbi',  # decoder algorithm.
                                         random_state=seed,
-                                        n_iter=10,
-                                        tol=0.01  # EM convergence threshold (gain in log-likelihood)
                                         )
 
     discrete_model.startprob_ = np.full((1, k), 1 / k)[0]
     adjacent_matrix = np.arange(20).reshape(5, 4)
     matrix_list = []
-    for i in range(1, k+1):
+    for i in range(1, k + 1):
         sub_list = []
         adjacent_elements = getAdjacent(adjacent_matrix, i)
-        for j in range(1, k+1):
+        for j in range(1, k + 1):
             if j in adjacent_elements or j == i:
                 sub_list.append(1 / (len(adjacent_elements) + 1))
             else:
@@ -88,8 +82,5 @@ def hmm_model_GRR(epsilon, k):
 
     return discrete_model
 
-
-states = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
-observations = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
 
 discrete_model = hmm_model_GRR(1, 20)

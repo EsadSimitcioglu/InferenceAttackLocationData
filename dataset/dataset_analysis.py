@@ -1,5 +1,5 @@
-
 row_count = 4
+
 
 def analyze_taken_path(users_value_list):
     path_dict = {}
