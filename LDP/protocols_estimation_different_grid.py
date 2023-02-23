@@ -37,7 +37,6 @@ def grr_estimated_guess(user_values_list, k, epsilon, model_type):
 
 
 def rappor_estimated_guess(user_values_list, k, epsilon):
-    epsilon = 5
     probability_per_user = list()
     for user_true_values in user_values_list:
         grid_number = user_true_values[0] - 1

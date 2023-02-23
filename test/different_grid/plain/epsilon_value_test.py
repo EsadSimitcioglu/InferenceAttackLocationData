@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from LDP.protocols_estimation_different_grid import grr_estimated_guess, rappor_estimated_guess
 
 # Parameters for simulation
-k = 20  # attribute's domain size (grid size)
+k = 9  # attribute's domain size (grid size)
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
 users_grid_value_list = list()
 probability_of_guess_grr_plain = list()
@@ -16,7 +16,7 @@ probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
 
-with open('../../../grid/taxi.dat') as f:
+with open('../../../grid/taxi_test_different_grid.dat') as f:
     reader = csv.reader(f, delimiter="\t")
     for line in reader:
         grid_list = line[0].split(" ")
@@ -27,7 +27,7 @@ with open('../../../grid/taxi.dat') as f:
 
 for epsilon in epsilon_list:
     probability_of_guess_grr_plain.append(grr_estimated_guess(users_grid_value_list, k, epsilon, "plain"))
-    probability_of_guess_grr_trained.append(grr_estimated_guess(users_grid_value_list, k, epsilon, "plain"))
+    probability_of_guess_grr_trained.append(grr_estimated_guess(users_grid_value_list, k, epsilon, "trained"))
 
     # rappor_est_freq = rappor_estimated_guess(users_grid_value_list, k, epsilon)
     # temp_probability_of_guess_rappor.append(rappor_est_freq)
@@ -47,7 +47,7 @@ print(probability_of_guess_grr_trained)
 plt.ylim(0, 1)
 plt.xlim(min(epsilon_list), max(epsilon_list))
 plt.plot(epsilon_list, probability_of_guess_grr_plain, label='GRR-Plain', color='red')
-plt.plot(epsilon_list, probability_of_guess_grr_trained, label='GRR-Trained', color='blue')
+plt.plot(epsilon_list, probability_of_guess_grr_trained, linestyle="dashed", label='GRR-Trained', color='blue')
 plt.ylabel('Probability of Guess')
 plt.xlabel('Epsilon values')
 plt.legend(loc='upper right', bbox_to_anchor=(1.015, 1.15))
