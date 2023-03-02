@@ -1,6 +1,8 @@
 from hmmlearn import hmm
 import numpy as np
 
+from grid.dataset_analysis import analyze_taken_path
+
 states = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
 observations = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
                 "20"]
@@ -90,6 +92,9 @@ def hmm_model_GRR(epsilon, k):
 
 
 def hmm_model_GRR_pre_analyze(epsilon, k, user_value_list):
+
+    dict_of_path = analyze_taken_path(user_value_list)
+
     p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
     q = (1 - p) / (k - 1)
 
@@ -115,9 +120,13 @@ def hmm_model_GRR_pre_analyze(epsilon, k, user_value_list):
     for i in range(1, k + 1):
         sub_list = []
         adjacent_elements = getAdjacent(adjacent_matrix, i)
+        sum_of_path = dict_of_path[i][i]
+        for element in adjacent_elements:
+            sum_of_path += dict_of_path[i][element]
         for j in range(1, k + 1):
             if j in adjacent_elements or j == i:
-                sub_list.append(1 / (len(adjacent_elements) + 1))
+                taken_path = dict_of_path[i][j]
+                sub_list.append(taken_path / sum_of_path)
             else:
                 sub_list.append(0)
         matrix_list.append(sub_list)
@@ -139,14 +148,54 @@ def hmm_model_GRR_pre_analyze(epsilon, k, user_value_list):
     return discrete_model
 
 
-adjacent_matrix = np.arange(20).reshape(5, 4)
-matrix_list = []
-for i in range(1, 21):
-    sub_list = []
-    adjacent_elements = getAdjacent(adjacent_matrix, i)
-    for j in range(1, 21):
-        if (j) in adjacent_elements or j == i:
-            sub_list.append(1 / (len(adjacent_elements) + 1))
-        else:
-            sub_list.append(0)
-    matrix_list.append(sub_list)
+def hmm_model_RAPPOR(epsilon, k):
+    p = np.exp(epsilon / 2) / (np.exp(epsilon / 2) + 1)
+    q = 1 / (np.exp(epsilon / 2) + 1)
+
+    adjacent_matrix = np.arange(k).reshape(5, 4)
+    transmat_prob_list = []
+    for i in range(1, k + 1):
+        sub_list = []
+        adjacent_elements = getAdjacent(adjacent_matrix, i)
+        for j in range(1, k + 1):
+            if j in adjacent_elements or j == i:
+                sub_list.append(1 / (len(adjacent_elements) + 1))
+            else:
+                sub_list.append(0)
+        transmat_prob_list.append(sub_list)
+
+    rappor_report_list = list()
+    for x in range(2 ** k):
+        rappor_report_list.append((bin(x)[2:].zfill(k)))
+
+    user_value_list = list()
+    for i in range(k):
+        bit_vector = ''
+        for j in range(k):
+            if i == j:
+                bit_vector += '1'
+            else:
+                bit_vector += '0'
+        user_value_list.append(bit_vector)
+
+    emission_prob_list = list()
+    for row_index in range(len(user_value_list)):
+        row = rappor_report_list[row_index]
+        row_prob_list = list()
+        for column_index in range(len(rappor_report_list)):
+            column = rappor_report_list[column_index]
+            prob = 1
+            for char_index in range(len(row)):
+                if row[char_index] == column[char_index]:
+                    prob *= p
+                else:
+                    prob *= q
+            row_prob_list.append(prob)
+        emission_prob_list.append(row_prob_list)
+
+    model = hmm.MultinomialHMM(n_components=k, algorithm='viterbi')
+    model.startprob_ = np.array([1 / k] * k)
+    model.transmat_ = np.array(transmat_prob_list)
+    model.emissionprob_ = np.array(emission_prob_list)
+
+    return model

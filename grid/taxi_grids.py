@@ -12,7 +12,7 @@ max_long = 41.18  ### 51.037119
 min_lat = -8.68  ##-8.78    ### -9.781308
 min_long = 41.14  ### 31.992111
 
-write_filename = "taxi.dat"
+write_filename = "../dataset/taxi.dat"
 
 
 def preprocess_kaggle():

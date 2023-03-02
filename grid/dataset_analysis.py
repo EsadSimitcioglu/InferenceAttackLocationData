@@ -1,26 +1,33 @@
+import csv
+
+import numpy as np
+
 row_count = 4
 
 
-def analyze_taken_path(users_value_list):
+def analyze_taken_path(users_grid_value_list):
+
     path_dict = {}
-    for user_value in users_value_list:
+    for user_value in users_grid_value_list:
         for value_index, value in enumerate(user_value):
             if value_index == 0:
                 continue
 
             prev_grid = user_value[value_index - 1]
 
-            if value == prev_grid:
-                continue
+            if prev_grid in path_dict:
+                value_dict = path_dict.get(prev_grid)
 
-            path = str(prev_grid) + "->" + str(value)
+                if value in value_dict:
+                    value_dict[value] += 1
+                else:
+                    value_dict[value] = 1
 
-            if path in path_dict:
-                path_dict[path] += 1
             else:
-                path_dict[path] = 1
+                value_dict = {value: 1}
+                path_dict[prev_grid] = value_dict
 
-    return {k: v for k, v in sorted(path_dict.items(), key=lambda item: item[1], reverse=True)}
+    return path_dict
 
 
 def analyze_not_taken_path(analyzed_path_dict):
