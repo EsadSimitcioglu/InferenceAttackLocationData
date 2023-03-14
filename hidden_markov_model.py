@@ -92,7 +92,6 @@ def hmm_model_GRR(epsilon, k):
 
 
 def hmm_model_GRR_pre_analyze(epsilon, k, user_value_list):
-
     dict_of_path = analyze_taken_path(user_value_list)
 
     p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
@@ -113,6 +112,9 @@ def hmm_model_GRR_pre_analyze(epsilon, k, user_value_list):
     for grid_count in start_grid_dict.values():
         start_prob_list.append(grid_count / sum_grid_counts)
 
+    for _ in range(k - len(start_prob_list)):
+        start_prob_list.append(0)
+
     discrete_model.startprob_ = np.array(start_prob_list)
 
     adjacent_matrix = np.arange(20).reshape(5, 4)
@@ -122,9 +124,10 @@ def hmm_model_GRR_pre_analyze(epsilon, k, user_value_list):
         adjacent_elements = getAdjacent(adjacent_matrix, i)
         sum_of_path = dict_of_path[i][i]
         for element in adjacent_elements:
-            sum_of_path += dict_of_path[i][element]
+            if element in dict_of_path[i]:
+                sum_of_path += dict_of_path[i][element]
         for j in range(1, k + 1):
-            if j in adjacent_elements or j == i:
+            if (j in adjacent_elements or j == i) and (j in dict_of_path[i]):
                 taken_path = dict_of_path[i][j]
                 sub_list.append(taken_path / sum_of_path)
             else:
@@ -180,7 +183,59 @@ def hmm_model_RAPPOR(epsilon, k):
 
     emission_prob_list = list()
     for row_index in range(len(user_value_list)):
-        row = rappor_report_list[row_index]
+        row = user_value_list[row_index]
+        row_prob_list = list()
+        for column_index in range(len(rappor_report_list)):
+            column = rappor_report_list[column_index]
+            prob = 1
+            for char_index in range(len(row)):
+                if row[char_index] == column[char_index]:
+                    prob *= p
+                else:
+                    prob *= q
+            row_prob_list.append(prob)
+        emission_prob_list.append(row_prob_list)
+
+    model = hmm.MultinomialHMM(n_components=k, algorithm='viterbi')
+    model.startprob_ = np.array([1 / k] * k)
+    model.transmat_ = np.array(transmat_prob_list)
+    model.emissionprob_ = np.array(emission_prob_list)
+
+    return model
+
+def hmm_model_OUE(epsilon, k):
+    p = 1/2
+    q = 1 / (np.exp(epsilon) + 1)
+
+    adjacent_matrix = np.arange(k).reshape(5, 4)
+    transmat_prob_list = []
+    for i in range(1, k + 1):
+        sub_list = []
+        adjacent_elements = getAdjacent(adjacent_matrix, i)
+        for j in range(1, k + 1):
+            if j in adjacent_elements or j == i:
+                sub_list.append(1 / (len(adjacent_elements) + 1))
+            else:
+                sub_list.append(0)
+        transmat_prob_list.append(sub_list)
+
+    rappor_report_list = list()
+    for x in range(2 ** k):
+        rappor_report_list.append((bin(x)[2:].zfill(k)))
+
+    user_value_list = list()
+    for i in range(k):
+        bit_vector = ''
+        for j in range(k):
+            if i == j:
+                bit_vector += '1'
+            else:
+                bit_vector += '0'
+        user_value_list.append(bit_vector)
+
+    emission_prob_list = list()
+    for row_index in range(len(user_value_list)):
+        row = user_value_list[row_index]
         row_prob_list = list()
         for column_index in range(len(rappor_report_list)):
             column = rappor_report_list[column_index]
