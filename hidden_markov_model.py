@@ -1,3 +1,4 @@
+import xxhash
 from hmmlearn import hmm
 import numpy as np
 
@@ -203,8 +204,9 @@ def hmm_model_RAPPOR(epsilon, k):
 
     return model
 
+
 def hmm_model_OUE(epsilon, k):
-    p = 1/2
+    p = 1 / 2
     q = 1 / (np.exp(epsilon) + 1)
 
     adjacent_matrix = np.arange(k).reshape(5, 4)
@@ -254,3 +256,41 @@ def hmm_model_OUE(epsilon, k):
     model.emissionprob_ = np.array(emission_prob_list)
 
     return model
+
+
+def hmm_model_OLH(epsilon, k, seed_counter):
+    p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
+    g = int(round(np.exp(epsilon))) + 1
+    q = (1 - p) / (g - 1)
+
+    discrete_model = hmm.MultinomialHMM(n_components=k, algorithm='viterbi')
+
+    discrete_model.startprob_ = np.full((1, k), 1 / k)[0]
+    adjacent_matrix = np.arange(20).reshape(5, 4)
+    matrix_list = []
+    for obs_state in range(1, k + 1):
+        sub_list = []
+        adjacent_elements = getAdjacent(adjacent_matrix, obs_state)
+        for hidden_state in range(1, k + 1):
+            if hidden_state in adjacent_elements or hidden_state == obs_state:
+                sub_list.append(1 / (len(adjacent_elements) + 1))
+            else:
+                sub_list.append(0)
+        matrix_list.append(sub_list)
+
+    discrete_model.transmat_ = np.array(matrix_list)
+
+    matrix_list = []
+    for obs_state in range(k):
+        row_list = []
+        hash_value_of_obs_state = (xxhash.xxh32(str(obs_state), seed=seed_counter).intdigest() % g)
+        for hidden_state in range(g):
+            if hash_value_of_obs_state == hidden_state:
+                row_list.append(p)
+            else:
+                row_list.append(q)
+        matrix_list.append(row_list)
+
+    discrete_model.emissionprob_ = np.array(matrix_list)
+
+    return discrete_model

@@ -549,7 +549,7 @@ def OLH_Client(input_data_list, k, epsilon, seed_init):
         report_value = (xxhash.xxh32(str(input_data), seed=seed_init).intdigest() % g)
         rnd = np.random.random()
         if rnd > p:
-            report_value = np.random.randint(0, k)
+            report_value = np.random.randint(0, g)
         report_list.append(report_value)
         seed_init+=1
     return report_list

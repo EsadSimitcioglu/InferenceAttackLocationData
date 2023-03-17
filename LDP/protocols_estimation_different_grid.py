@@ -1,7 +1,9 @@
 from statistics import mode
 
 import numpy as np
-from hidden_markov_model import hmm_model_GRR, hmm_model_GRR_pre_analyze, hmm_model_RAPPOR, hmm_model_OUE
+import xxhash
+
+from hidden_markov_model import hmm_model_GRR, hmm_model_GRR_pre_analyze, hmm_model_RAPPOR, hmm_model_OUE, hmm_model_OLH
 from LDP.protocols import GRR_Client, SIMPLE_RAPPOR_Client, OUE_Client, OLH_Client, OLH_Client2
 from metric.path_distance import find_path_distance
 
@@ -147,27 +149,33 @@ def OUE_estimated_guess(user_values_list, k, epsilon, test_type):
         return sum(epsilon_prob) / len(epsilon_prob)
 
 
-def OLH_estimated_guess(user_values_list, k, epsilon):
-    olh_report_list = list()
+def OLH_estimated_guess(user_values_list, k, epsilon, test_type):
+    guess_prob_list = list()
+    error_sum = 0
     seed_init = 0
+    g = int(round(np.exp(epsilon))) + 1
     for user_true_values in user_values_list:
-        true_value = user_true_values[0]
         olh_reports = OLH_Client(user_true_values, k, epsilon, seed_init)
         seed_init2 = seed_init
-        probability_list = list()
-        for report in olh_reports:
-            is_add = False
-            for grid_number in range(1, k + 1):
-                grid_number_power = np.repeat(grid_number, 100)
-                olh_guess_reports = OLH_Client2(grid_number_power, k, epsilon, seed_init2)
-                olh_guess_mode = mode(olh_guess_reports)
-                if report == olh_guess_mode and grid_number == true_value:
-                    probability_list.append(1)
-                    is_add = True
-                    break
+        for index, report in enumerate(olh_reports):
+            true_value = user_true_values[index]
+            model = hmm_model_OLH(epsilon, k, seed_init2)
+            obs_sequence_list = [report]
+            obs_sequence = np.array([obs_sequence_list]).T
+            _, state_sequence = model.decode(obs_sequence)
+
+            if test_type == 'path':
+                guess_values = list()
+                for o, s in zip(obs_sequence.T[0], state_sequence):
+                    guess_values.append(int(states[int(s)]))
+                error_sum += find_path_distance(user_true_values[index], report)
+            elif test_type == 'guess':
+                true_value = (xxhash.xxh32(str(true_value), seed=seed_init2).intdigest() % g)
+                guess_value = obs_sequence[0][0]
+                if guess_value == true_value:
+                    guess_prob_list.append(1)
+                else:
+                    guess_prob_list.append(0)
             seed_init2 += 1
-            if not is_add:
-                probability_list.append(0)
-        olh_report_list.append(sum(probability_list) / (len(probability_list)))
         seed_init += 20
-    return olh_report_list
+    return np.average(guess_prob_list)

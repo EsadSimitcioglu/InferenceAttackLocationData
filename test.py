@@ -1,18 +1,8 @@
-import numpy as np
+import csv
+
+import xxhash
 from hmmlearn import hmm
-
-epsilon =1
-k = 8
-p = np.exp(epsilon / 2) / (np.exp(epsilon / 2) + 1)
-q = 1 / (np.exp(epsilon / 2) + 1)
-seed = 93
-np.random.seed(seed)
-
-states = ["1", "2", "3", "4", "5", "6", "7", "8"]
-
-observations = list()
-for x in range(256):
-    observations.append((bin(x)[2:].zfill(8)))
+import numpy as np
 
 
 def isValidPos(i, j, n, m):
@@ -60,78 +50,71 @@ def getAdjacent(arr, number):
     return [x + 1 for x in v]
 
 
-def binary_to_decimal(binary_number):
-    decimal_number = 0
-    index_counter = len(binary_number) - 1
-
-    for number in binary_number:
-        decimal_number += (int(number) * (2 ** index_counter))
-        index_counter -= 1
-    return decimal_number
+epsilon = 10
+k = 20
+p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
+g = int(round(np.exp(epsilon))) + 1
+q = (1 - p) / (k - 1)
 
 
-adjacent_matrix = np.arange(8).reshape(2, 4)
-transmat_prob_list = []
-for i in range(1, 8 + 1):
-    sub_list = []
-    adjacent_elements = getAdjacent(adjacent_matrix, i)
-    for j in range(1, 8 + 1):
-        if j in adjacent_elements or j == i:
-            sub_list.append(1 / (len(adjacent_elements) + 1))
-        else:
-            sub_list.append(0)
-    transmat_prob_list.append(sub_list)
+def create_model(seed_counter):
+    # create an HMM object with precomputed start probabilities, transition probabilities, and emission probabilities
+    model = hmm.MultinomialHMM(n_components=k)
 
-rappor_report_list = list()
-for x in range(256):
-    rappor_report_list.append((bin(x)[2:].zfill(8)))
-
-user_value_list = list()
-for i in range(8):
-    bit_vector = ''
-    for j in range(8):
-        if i == j:
-            bit_vector += '1'
-        else:
-            bit_vector += '0'
-    user_value_list.append(bit_vector)
-
-emission_prob_list = list()
-for row_index in range(len(user_value_list)):
-    row = rappor_report_list[row_index]
-    row_prob_list = list()
-    for column_index in range(len(rappor_report_list)):
-        column = rappor_report_list[column_index]
-        prob = 1
-        for char_index in range(len(row)):
-            if row[char_index] == column[char_index]:
-                prob *= p
+    model.startprob_ = np.full((1, k), 1 / k)[0]
+    adjacent_matrix = np.arange(20).reshape(5, 4)
+    matrix_list = []
+    for obs_state in range(1, k + 1):
+        sub_list = []
+        adjacent_elements = getAdjacent(adjacent_matrix, obs_state)
+        for hidden_state in range(1, k + 1):
+            if hidden_state in adjacent_elements or hidden_state == obs_state:
+                sub_list.append(1 / (len(adjacent_elements) + 1))
             else:
-                prob *= q
-        row_prob_list.append(prob)
-    emission_prob_list.append(row_prob_list)
+                sub_list.append(0)
+        matrix_list.append(sub_list)
+    model.transmat_ = np.array(matrix_list)
 
-model = hmm.MultinomialHMM(n_components=8, algorithm='viterbi', random_state=seed)
-model.startprob_ = np.array([1 / 8] * 8)
-model.transmat_ = np.array(transmat_prob_list)
-model.emissionprob_ = np.array(emission_prob_list)
+    matrix_list = []
+    for obs_state in range(1, k + 1):
+        row_list = []
+        hash_value_of_obs_state = (xxhash.xxh32(str(obs_state), seed=seed_counter).intdigest() % g)
+        for hidden_state in range(g):
+            if hash_value_of_obs_state == hidden_state:
+                row_list.append(p)
+            else:
+                row_list.append(q)
+        matrix_list.append(row_list)
+    model.emissionprob_ = np.array(matrix_list)
+    return model
 
-user_values = [3, 3, 3, 3, 3, 3]
-grr_reports = [1, 51, 172, 256, 64, 209]
-obs_sequence_list = []
-for grr_report in grr_reports:
-    obs_sequence_list.append(grr_report - 1)
-obs_sequence = np.array([obs_sequence_list]).T
-# Find most likely state sequence corresponding to obs_sequence
-logprob, state_sequence = model.decode(obs_sequence)
+users_grid_value_list = list()
+guess_prob_list = list()
+with open('grid/taxi_test_different_grid.dat') as f:
+    reader = csv.reader(f, delimiter="\t")
+    for line in reader:
+        grid_list = line[0].split(" ")
+        grid_list_int = [eval(i) for i in grid_list]
+        grid_list_int_nd = np.array(grid_list_int)
+        users_grid_value_list.append(grid_list_int_nd)
 
-prob_sum = 0
-index_counter = 0
+seed_counter = 1
+for user_values in users_grid_value_list:
+    for true_value in user_values:
+        hash_value_of_obs_state = (xxhash.xxh32(str(true_value), seed=seed_counter).intdigest() % g)
+        model = create_model(seed_counter)
+        report_value = (xxhash.xxh32(str(true_value), seed=seed_counter).intdigest() % g)
+        rnd = np.random.random()
+        if rnd > p:
+            report_value = np.random.randint(0, g)
+        obs_sequence_list = [report_value]
+        obs_sequence = np.array([obs_sequence_list]).T
+        _, state_sequence = model.decode(obs_sequence)
+        if hash_value_of_obs_state == obs_sequence[0][0]:
+            guess_prob_list.append(1)
+        else:
+            guess_prob_list.append(0)
+        print("True Value: " + str(hash_value_of_obs_state) + " , Guess Value: " + str(obs_sequence[0]))
+        seed_counter += 1
 
-for o, s in zip(obs_sequence.T[0], state_sequence):
-    true_value = user_values[index_counter]
-    if int(states[int(s)]) == true_value:
-        prob_sum += 1
-    index_counter += 1
-    print("{} -> {}".format(states[int(s)], true_value))
-print(prob_sum / len(user_values))
+print(np.average(guess_prob_list))
