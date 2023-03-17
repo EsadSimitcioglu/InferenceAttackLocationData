@@ -17,7 +17,7 @@ def find_path_distance(user_values, guess_values):
 
     for element_index in range(len(user_values)):
         userX, userY = find_coordinate(user_values[element_index])
-        guessX, guessY = find_coordinate(int(guess_values[int(s)]))
+        guessX, guessY = find_coordinate(guess_values[element_index])
 
         error_sum += math.sqrt(((guessX - userX) ** 2) + (guessY - userY) ** 2)
 

@@ -540,38 +540,33 @@ def dBitFlipPM_Aggregator(reports, b, d, eps_perm):
     return norm_est
 
 
-def OLH_Client(input_data, k, epsilon):
-    global seed_counter
-    global seeds
+def OLH_Client(input_data_list, k, epsilon, seed_init):
     p = exp(epsilon) / (exp(epsilon) + k - 1)
+    g = int(round(np.exp(epsilon))) + 1
+    report_list = list()
 
-    report_value = (xxhash.xxh32(str(input_data), seed=seeds[seed_counter]).intdigest() % k)
+    for input_data in input_data_list:
+        report_value = (xxhash.xxh32(str(input_data), seed=seed_init).intdigest() % g)
+        rnd = np.random.random()
+        if rnd > p:
+            report_value = np.random.randint(0, k)
+        report_list.append(report_value)
+        seed_init+=1
+    return report_list
 
-    rnd = np.random.random()
-    if rnd > p:
-        report_value = np.random.randint(0, k)
 
-    seed_counter += 1
-
-    return report_value
-
-
-def OLH_Client2(input_datas, n, k, epsilon):
+def OLH_Client2(input_data_list, k, epsilon, seed_init):
     p = exp(epsilon) / (exp(epsilon) + k - 1)
-    q = 1 - p
+    g = int(round(np.exp(epsilon))) + 1
+    report_list = list()
 
-    Y = np.zeros(n)
-    for i in range(n):
-        v = input_datas[i]
-        x = (xxhash.xxh32(str(v), seed=i).intdigest() % k)
-        y = x
-
-        p_sample = np.random.random_sample()
-        if p_sample > p - q:
-            y = np.random.randint(0, k)
-        Y[i] = y
-
-    return Y
+    for input_data in input_data_list:
+        report_value = (xxhash.xxh32(str(input_data), seed=seed_init).intdigest() % g)
+        rnd = np.random.random()
+        if rnd > p:
+            report_value = np.random.randint(0, k)
+        report_list.append(report_value)
+    return report_list
 
 
 def OLH_Aggregator(perturbed_datas, n, k, epsilon):

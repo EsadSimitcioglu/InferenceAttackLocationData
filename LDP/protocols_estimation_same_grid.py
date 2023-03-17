@@ -1,9 +1,8 @@
 from statistics import mode
 
 import numpy as np
-import xxhash
 
-from LDP.protocols import OUE_Client, OLH_Client, SIMPLE_RAPPOR_Client, GRR_Client
+from LDP.protocols import OUE_Client, OLH_Client, SIMPLE_RAPPOR_Client, GRR_Client, OLH_Client2
 
 
 def grr_estimated_guess(user_values_list, k, epsilon):
@@ -29,7 +28,8 @@ def rappor_estimated_guess(user_values_list, k, epsilon):
         perturbed_bit_vectors = np.array(rappor_reports)
         sum_perturbed_bit_by_bit = sum(perturbed_bit_vectors)
         guess_of_grid = np.argmax(sum_perturbed_bit_by_bit)
-        if guess_of_grid == grid_number or sum_perturbed_bit_by_bit[guess_of_grid] == sum_perturbed_bit_by_bit[grid_number]:
+        if guess_of_grid == grid_number or sum_perturbed_bit_by_bit[guess_of_grid] == sum_perturbed_bit_by_bit[
+            grid_number]:
             probability_per_user.append(1)
         else:
             probability_per_user.append(0)
@@ -37,19 +37,32 @@ def rappor_estimated_guess(user_values_list, k, epsilon):
 
 
 def olh_estimated_guess(user_values_list, k, epsilon):
-    seeds = np.arange(200)
-    seed_counter = 0
-    probability_per_user = list()
+    olh_report_list = list()
+    seed_init = 0
     for user_true_values in user_values_list:
-        grid_number = user_true_values[0]
-        olh_reports = [OLH_Client(user_true_value, k, epsilon) for user_true_value in user_true_values]
-        report_value_list = list()
-        for value in user_true_values:
-            report_value = (xxhash.xxh32(str(value), seed=seeds[seed_counter]).intdigest() % k)
-            report_value_list.append(report_value)
-            seed_counter += 1
-        probability_per_user.append(olh_reports[grid_number])
-    return sum(probability_per_user) / (len(user_values_list))
+        true_value = user_true_values[0]
+        olh_reports = OLH_Client(user_true_values, k, epsilon, seed_init)
+
+        seed_init2 = seed_init
+        probability_list = list()
+        for report in olh_reports:
+            is_add = False
+            for grid_number in range(1, k + 1):
+                grid_number_power = np.repeat(grid_number, 100)
+                olh_guess_reports = OLH_Client2(grid_number_power, k, epsilon, seed_init2)
+                olh_guess_mode = mode(olh_guess_reports)
+                if report == olh_guess_mode and grid_number == true_value:
+                    probability_list.append(1)
+                    is_add = True
+                    break
+                
+            seed_init2 += 1
+            if not is_add:
+                probability_list.append(0)
+        olh_report_list.append(sum(probability_list) / (len(probability_list)))
+        seed_init += 20
+
+    return olh_report_list
 
 
 def oue_estimated_guess(user_values_list, k, epsilon):
@@ -60,7 +73,8 @@ def oue_estimated_guess(user_values_list, k, epsilon):
         perturbed_bit_vectors = np.array(oue_reports)
         sum_perturbed_bit_by_bit = sum(perturbed_bit_vectors)
         guess_of_grid = np.argmax(sum_perturbed_bit_by_bit)
-        if guess_of_grid == grid_number or sum_perturbed_bit_by_bit[guess_of_grid] == sum_perturbed_bit_by_bit[grid_number]:
+        if guess_of_grid == grid_number or sum_perturbed_bit_by_bit[guess_of_grid] == sum_perturbed_bit_by_bit[
+            grid_number]:
             probability_per_user.append(1)
         else:
             probability_per_user.append(0)
