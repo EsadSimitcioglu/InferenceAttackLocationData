@@ -1,10 +1,7 @@
-from statistics import mode
-
 import numpy as np
-import xxhash
 
-from hidden_markov_model import hmm_model_GRR, hmm_model_GRR_pre_analyze, hmm_model_RAPPOR, hmm_model_OUE, hmm_model_OLH
-from LDP.protocols import GRR_Client, SIMPLE_RAPPOR_Client, OUE_Client, OLH_Client, OLH_Client2
+from hidden_markov_model.hidden_markov_model import hmm_model_GRR, hmm_model_RAPPOR, hmm_model_OUE, hmm_model_OLH
+from LDP.protocols import GRR_Client, SIMPLE_RAPPOR_Client, OUE_Client, OLH_Client2
 from metric.path_distance import find_path_distance
 
 states = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
@@ -54,16 +51,20 @@ def perturb(protocol_type, epsilon, k, user_true_value_list, seed_value=0):
     return perturbed_reports
 
 
-def hmm_model_guess(epsilon, k, user_true_value_list, protocol_type, test_type, model=None):
+def guess(epsilon, k, user_true_value_list, protocol_type, test_type, model=None, user_guess_value_list=None ):
     error_sum = 0
     guess_prob_list = list()
+    guess_list = list()
 
     perturbed_reports = perturb(protocol_type, epsilon, k, user_true_value_list)
 
     for index, user_perturbed_report in enumerate(perturbed_reports):
 
         if protocol_type == "OLH":
-            model = hmm_model_OLH(epsilon, k, index + 1)
+            if user_guess_value_list is None:
+                model = hmm_model_OLH(epsilon, k, index + 1, 'plain')
+            else:
+                model = hmm_model_OLH(epsilon, k, index + 1, 'advance', user_guess_value_list)
 
         obs_sequence_list = []
         for perturbed_report in user_perturbed_report:
@@ -80,7 +81,8 @@ def hmm_model_guess(epsilon, k, user_true_value_list, protocol_type, test_type, 
         if test_type == 'path':
             guess_values = list()
             for o, s in zip(obs_sequence.T[0], state_sequence):
-                guess_values.append(int(states[int(s)]))
+                guess_value = s if protocol_type == "OLH" else (s + 1)
+                guess_values.append(guess_value)
             error_sum += find_path_distance(user_true_value_list[index], guess_values)
         elif test_type == 'guess':
             for o, s in zip(obs_sequence.T[0], state_sequence):
@@ -90,33 +92,61 @@ def hmm_model_guess(epsilon, k, user_true_value_list, protocol_type, test_type, 
                     prob_sum += 1
                 index_counter += 1
             guess_prob_list.append(prob_sum / index_counter)
+        elif test_type == 'advance':
+            user_guess_list = list()
+            for o, s in zip(obs_sequence.T[0], state_sequence):
+                guess_value = s if protocol_type == "OLH" else (s + 1)
+                user_guess_list.append(guess_value)
+            guess_list.append(np.array(user_guess_list))
 
     if test_type == 'path':
         return error_sum
     elif test_type == 'guess':
         return np.average(guess_prob_list)
+    elif test_type == 'advance':
+        return guess_list
 
 
-def GRR_estimated_guess(user_values_list, k, epsilon, model_type, test_type):
-    if model_type == "plain":
-        model = hmm_model_GRR(epsilon, k)
-    else:
-        model = hmm_model_GRR_pre_analyze(epsilon, k, user_values_list)
-    return hmm_model_guess(epsilon, k, user_values_list, "GRR", test_type, model)
+def GRR_estimated_guess(user_values_list, k, epsilon, test_type):
+    model = hmm_model_GRR(epsilon, k, 'plain')
+    return guess(epsilon, k, user_values_list, "GRR", test_type, model)
+
 
 def GRR_advance_estimated_guess(user_values_list, k, epsilon, test_type):
-    model = hmm_model_GRR_pre_analyze(epsilon, k, user_values_list)
+    plain_model = hmm_model_GRR(epsilon, k, 'plain')
+    hmm_values_list = guess(epsilon, k, user_values_list, "GRR", 'advance', plain_model)
+    model = hmm_model_GRR(epsilon, k, 'advance', hmm_values_list)
+    return guess(epsilon, k, user_values_list, "GRR", 'guess', model)
 
 
 def RAPPOR_estimated_guess(user_values_list, k, epsilon, test_type):
-    model = hmm_model_RAPPOR(epsilon, k)
-    return hmm_model_guess(epsilon, k, user_values_list, "RAPPOR", test_type, model)
+    model = hmm_model_RAPPOR(epsilon, k, 'plain')
+    return guess(epsilon, k, user_values_list, "RAPPOR", test_type, model)
+
+
+def RAPPOR_advance_estimated_guess(user_values_list, k, epsilon, test_type):
+    plain_model = hmm_model_RAPPOR(epsilon, k, 'plain')
+    hmm_values_list = guess(epsilon, k, user_values_list, "RAPPOR", 'advance', plain_model)
+    model = hmm_model_RAPPOR(epsilon, k, 'advance', hmm_values_list)
+    return guess(epsilon, k, user_values_list, "RAPPOR", 'guess', model)
 
 
 def OUE_estimated_guess(user_values_list, k, epsilon, test_type):
-    model = hmm_model_OUE(epsilon, k)
-    return hmm_model_guess(epsilon, k, user_values_list, "OUE", test_type, model)
+    model = hmm_model_OUE(epsilon, k, 'plain')
+    return guess(epsilon, k, user_values_list, "OUE", test_type, model)
+
+
+def OUE_advance_estimated_guess(user_values_list, k, epsilon, test_type):
+    plain_model = hmm_model_OUE(epsilon, k, 'plain')
+    hmm_values_list = guess(epsilon, k, user_values_list, "OUE", 'advance', plain_model)
+    model = hmm_model_RAPPOR(epsilon, k, 'advance', hmm_values_list)
+    return guess(epsilon, k, user_values_list, "OUE", 'guess', model)
 
 
 def OLH_estimated_guess(user_values_list, k, epsilon, test_type):
-    return hmm_model_guess(epsilon, k, user_values_list, "OLH", test_type)
+    return guess(epsilon, k, user_values_list, "OLH", test_type)
+
+
+def OLH_advance_estimated_guess(user_values_list, k, epsilon, test_type):
+    hmm_values_list = guess(epsilon, k, user_values_list, "OLH", 'advance')
+    return guess(epsilon, k, user_values_list, "OLH", test_type, user_guess_value_list=hmm_values_list)

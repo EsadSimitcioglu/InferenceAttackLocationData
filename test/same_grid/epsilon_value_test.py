@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from LDP.protocols_estimation_same_grid import grr_estimated_guess, rappor_estimated_guess, oue_estimated_guess, \
+from LDP.estimation_same_grid import grr_estimated_guess, rappor_estimated_guess, oue_estimated_guess, \
     olh_estimated_guess
 
 # Parameters for simulation

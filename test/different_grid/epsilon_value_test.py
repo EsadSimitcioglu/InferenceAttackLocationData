@@ -1,7 +1,7 @@
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
-from LDP.protocols_estimation_different_grid import GRR_estimated_guess, RAPPOR_estimated_guess, OUE_estimated_guess, \
+from LDP.estimation_different_grid import GRR_estimated_guess, RAPPOR_estimated_guess, OUE_estimated_guess, \
     OLH_estimated_guess
 
 # Parameters for simulation
@@ -27,10 +27,8 @@ with open('../../grid/taxi_test_different_grid.dat') as f:
 for epsilon in epsilon_list:
 
     print("Epsilon Value: " + str(epsilon))
-    probability_of_guess_grr_plain.append(GRR_estimated_guess(users_grid_value_list, k, epsilon, "plain", 'guess'))
-    print("Plain GRR is Ready")
-    probability_of_guess_grr_trained.append(GRR_estimated_guess(users_grid_value_list, k, epsilon, "trained", 'guess'))
-    print("Trained GRR is Ready")
+    probability_of_guess_grr_plain.append(GRR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
+    print("GRR is Ready")
     probability_of_guess_rappor.append(RAPPOR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("RAPPOR is Ready")
     probability_of_guess_oue.append(OUE_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
@@ -39,14 +37,12 @@ for epsilon in epsilon_list:
     print("OLH is Ready")
 
 print(probability_of_guess_grr_plain)
-print(probability_of_guess_grr_trained)
 print(probability_of_guess_rappor)
 print(probability_of_guess_oue)
 print(probability_of_guess_olh)
 plt.ylim(0, 1)
 plt.xlim(min(epsilon_list), max(epsilon_list))
 plt.plot(epsilon_list, probability_of_guess_grr_plain, label='GRR-Plain', color='red')
-plt.plot(epsilon_list, probability_of_guess_grr_trained, linestyle="dashed", label='GRR-Trained', color='blue')
 plt.plot(epsilon_list, probability_of_guess_rappor, label='RAPPOR', color='green')
 plt.plot(epsilon_list, probability_of_guess_oue, label='OUE', color='yellow')
 plt.plot(epsilon_list, probability_of_guess_olh, label='OLH', color='purple')
