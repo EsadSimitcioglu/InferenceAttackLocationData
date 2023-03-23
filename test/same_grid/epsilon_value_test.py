@@ -20,28 +20,30 @@ for user_values in data:
     users_grid_value_list.append(user_values)
 
 for epsilon in epsilon_list:
+    print("Epsilon Value Is: " + str(epsilon))
     temp_probability_of_guess_grr = list()
     temp_probability_of_guess_rappor = list()
     temp_probability_of_guess_oue = list()
     temp_probability_of_guess_olh = list()
-    for _ in range(20):
-        grr_est_freq = grr_estimated_guess(users_grid_value_list, k, epsilon)
-        temp_probability_of_guess_grr.append(grr_est_freq)
 
-        rappor_est_freq = rappor_estimated_guess(users_grid_value_list, k, epsilon)
-        temp_probability_of_guess_rappor.append(rappor_est_freq)
+    grr_est_freq = grr_estimated_guess(users_grid_value_list, k, epsilon)
+    temp_probability_of_guess_grr.append(grr_est_freq)
 
-        oue_est_freq = oue_estimated_guess(users_grid_value_list, k, epsilon)
-        temp_probability_of_guess_oue.append(oue_est_freq)
+    rappor_est_freq = rappor_estimated_guess(users_grid_value_list, k, epsilon)
+    temp_probability_of_guess_rappor.append(rappor_est_freq)
 
-        olh_est_freq = olh_estimated_guess(users_grid_value_list, k, epsilon)
-        temp_probability_of_guess_olh.append(olh_est_freq)
+    oue_est_freq = oue_estimated_guess(users_grid_value_list, k, epsilon)
+    temp_probability_of_guess_oue.append(oue_est_freq)
+
+    olh_est_freq = olh_estimated_guess(users_grid_value_list, k, epsilon)
+    temp_probability_of_guess_olh.append(olh_est_freq)
 
     probability_of_guess_grr.append(sum(temp_probability_of_guess_grr) / len(temp_probability_of_guess_grr))
     probability_of_guess_rappor.append(sum(temp_probability_of_guess_rappor) / len(temp_probability_of_guess_rappor))
     probability_of_guess_oue.append(sum(temp_probability_of_guess_oue) / len(temp_probability_of_guess_oue))
     probability_of_guess_olh.append(np.average(temp_probability_of_guess_olh))
 
+print(probability_of_guess_olh)
 plt.ylim(0, 1)
 plt.xlim(min(epsilon_list), max(epsilon_list))
 plt.plot(epsilon_list, probability_of_guess_grr, label='GRR', color='red')

@@ -62,7 +62,7 @@ def hmm_model_GRR(epsilon, k):
                                         algorithm='viterbi',  # decoder algorithm.
                                         )
 
-    discrete_model.startprob_ = np.full((1, k), 1 / k)[0]
+    discrete_model.startprob_ = np.array([1 / k] * k)
     adjacent_matrix = np.arange(20).reshape(5, 4)
     matrix_list = []
     for i in range(1, k + 1):

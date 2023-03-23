@@ -20,20 +20,57 @@ def binary_to_decimal(binary_number):
     return decimal_number
 
 
-def GRR_estimated_guess(user_values_list, k, epsilon, model_type, test_type):
-    if model_type == "plain":
-        model = hmm_model_GRR(epsilon, k)
-    else:
-        model = hmm_model_GRR_pre_analyze(epsilon, k, user_values_list)
-    epsilon_prob = list()
-    error_sum = 0
+def perturb(protocol_type, epsilon, k, user_true_value_list, seed_value=0):
+    perturbed_reports = list()
+    if protocol_type == 'GRR':
+        for user_true_values in user_true_value_list:
+            perturbed_reports.append([GRR_Client(user_true_value, k, epsilon) for user_true_value in user_true_values])
+    elif protocol_type == 'RAPPOR':
+        for user_true_values in user_true_value_list:
+            report_binary_list = list()
+            rappor_reports = [SIMPLE_RAPPOR_Client(user_true_value, k, epsilon) for user_true_value in user_true_values]
+            for rappor_report in rappor_reports:
+                report_string = ""
+                for index in rappor_report:
+                    report_string += str(int(index))
+                report_binary_list.append(binary_to_decimal(report_string))
+            perturbed_reports.append(report_binary_list)
+    elif protocol_type == 'OUE':
+        for user_true_values in user_true_value_list:
+            report_binary_list = list()
+            oue_reports = [OUE_Client(user_true_value, k, epsilon) for user_true_value in user_true_values]
+            for report in oue_reports:
+                report_string = ""
+                for index in report:
+                    report_string += str(int(index))
+                report_binary_list.append(binary_to_decimal(report_string))
+            perturbed_reports.append(report_binary_list)
+    elif protocol_type == 'OLH':
+        seed_value = 1
+        for user_true_values in user_true_value_list:
+            perturbed_reports.append(OLH_Client2(user_true_values, k, epsilon, seed_value))
+            seed_value += 1
 
-    for user_true_values in user_values_list:
-        grr_reports = [GRR_Client(user_true_value, k, epsilon) for user_true_value in user_true_values]
+    return perturbed_reports
+
+
+def hmm_model_guess(epsilon, k, user_true_value_list, protocol_type, test_type, model=None):
+    error_sum = 0
+    guess_prob_list = list()
+
+    perturbed_reports = perturb(protocol_type, epsilon, k, user_true_value_list)
+
+    for index, user_perturbed_report in enumerate(perturbed_reports):
+
+        if protocol_type == "OLH":
+            model = hmm_model_OLH(epsilon, k, index + 1)
 
         obs_sequence_list = []
-        for grr_report in grr_reports:
-            obs_sequence_list.append(grr_report - 1)
+        for perturbed_report in user_perturbed_report:
+            if protocol_type == "GRR":
+                obs_sequence_list.append(perturbed_report - 1)
+            else:
+                obs_sequence_list.append(perturbed_report)
         obs_sequence = np.array([obs_sequence_list]).T
 
         _, state_sequence = model.decode(obs_sequence)
@@ -44,138 +81,42 @@ def GRR_estimated_guess(user_values_list, k, epsilon, model_type, test_type):
             guess_values = list()
             for o, s in zip(obs_sequence.T[0], state_sequence):
                 guess_values.append(int(states[int(s)]))
-            error_sum += find_path_distance(user_true_values, guess_values)
+            error_sum += find_path_distance(user_true_value_list[index], guess_values)
         elif test_type == 'guess':
             for o, s in zip(obs_sequence.T[0], state_sequence):
-                true_value = user_true_values[index_counter]
-                if int(states[int(s)]) == true_value:
+                true_value = user_true_value_list[index][index_counter]
+                guess_value = s if protocol_type == "OLH" else (s + 1)
+                if guess_value == true_value:
                     prob_sum += 1
                 index_counter += 1
-            epsilon_prob.append(prob_sum / index_counter)
+            guess_prob_list.append(prob_sum / index_counter)
 
     if test_type == 'path':
         return error_sum
     elif test_type == 'guess':
-        return sum(epsilon_prob) / len(epsilon_prob)
+        return np.average(guess_prob_list)
+
+
+def GRR_estimated_guess(user_values_list, k, epsilon, model_type, test_type):
+    if model_type == "plain":
+        model = hmm_model_GRR(epsilon, k)
+    else:
+        model = hmm_model_GRR_pre_analyze(epsilon, k, user_values_list)
+    return hmm_model_guess(epsilon, k, user_values_list, "GRR", test_type, model)
+
+def GRR_advance_estimated_guess(user_values_list, k, epsilon, test_type):
+    model = hmm_model_GRR_pre_analyze(epsilon, k, user_values_list)
 
 
 def RAPPOR_estimated_guess(user_values_list, k, epsilon, test_type):
     model = hmm_model_RAPPOR(epsilon, k)
-    epsilon_prob = list()
-    error_sum = 0
-    print("RAPPOR Calculation is started")
-
-    for user_true_values in user_values_list:
-        rappor_reports = [SIMPLE_RAPPOR_Client(user_true_value, k, epsilon) for user_true_value in user_true_values]
-
-        rappor_reports_decimal_list = list()
-        for rappor_report in rappor_reports:
-            report_string = ""
-            for index in rappor_report:
-                report_string += str(int(index))
-            report_binary = binary_to_decimal(report_string)
-            rappor_reports_decimal_list.append(report_binary)
-
-        obs_sequence_list = []
-        for grr_report in rappor_reports_decimal_list:
-            obs_sequence_list.append(grr_report)
-        obs_sequence = np.array([obs_sequence_list]).T
-        logprob, state_sequence = model.decode(obs_sequence)
-
-        prob_sum = 0
-        index_counter = 0
-
-        if test_type == 'path':
-            guess_values = list()
-            for o, s in zip(obs_sequence.T[0], state_sequence):
-                guess_values.append(int(states[int(s)]))
-            error_sum += find_path_distance(user_true_values, guess_values)
-        elif test_type == 'guess':
-            for o, s in zip(obs_sequence.T[0], state_sequence):
-                true_value = user_true_values[index_counter]
-                if int(states[int(s)]) == true_value:
-                    prob_sum += 1
-                index_counter += 1
-            epsilon_prob.append(prob_sum / index_counter)
-
-    if test_type == 'path':
-        return error_sum
-    elif test_type == 'guess':
-        return sum(epsilon_prob) / len(epsilon_prob)
+    return hmm_model_guess(epsilon, k, user_values_list, "RAPPOR", test_type, model)
 
 
 def OUE_estimated_guess(user_values_list, k, epsilon, test_type):
     model = hmm_model_OUE(epsilon, k)
-    epsilon_prob = list()
-    error_sum = 0
-    print("RAPPOR Calculation is started")
-
-    for user_true_values in user_values_list:
-        rappor_reports = [OUE_Client(user_true_value, k, epsilon) for user_true_value in user_true_values]
-
-        rappor_reports_decimal_list = list()
-        for rappor_report in rappor_reports:
-            report_string = ""
-            for index in rappor_report:
-                report_string += str(int(index))
-            report_binary = binary_to_decimal(report_string)
-            rappor_reports_decimal_list.append(report_binary)
-
-        obs_sequence_list = []
-        for grr_report in rappor_reports_decimal_list:
-            obs_sequence_list.append(grr_report)
-        obs_sequence = np.array([obs_sequence_list]).T
-        logprob, state_sequence = model.decode(obs_sequence)
-
-        prob_sum = 0
-        index_counter = 0
-
-        if test_type == 'path':
-            guess_values = list()
-            for o, s in zip(obs_sequence.T[0], state_sequence):
-                guess_values.append(int(states[int(s)]))
-            error_sum += find_path_distance(user_true_values, guess_values)
-        elif test_type == 'guess':
-            for o, s in zip(obs_sequence.T[0], state_sequence):
-                true_value = user_true_values[index_counter]
-                if int(states[int(s)]) == true_value:
-                    prob_sum += 1
-                index_counter += 1
-            epsilon_prob.append(prob_sum / index_counter)
-
-    if test_type == 'path':
-        return error_sum
-    elif test_type == 'guess':
-        return sum(epsilon_prob) / len(epsilon_prob)
+    return hmm_model_guess(epsilon, k, user_values_list, "OUE", test_type, model)
 
 
 def OLH_estimated_guess(user_values_list, k, epsilon, test_type):
-    guess_prob_list = list()
-    error_sum = 0
-    seed_init = 0
-    g = int(round(np.exp(epsilon))) + 1
-    for user_true_values in user_values_list:
-        olh_reports = OLH_Client(user_true_values, k, epsilon, seed_init)
-        seed_init2 = seed_init
-        for index, report in enumerate(olh_reports):
-            true_value = user_true_values[index]
-            model = hmm_model_OLH(epsilon, k, seed_init2)
-            obs_sequence_list = [report]
-            obs_sequence = np.array([obs_sequence_list]).T
-            _, state_sequence = model.decode(obs_sequence)
-
-            if test_type == 'path':
-                guess_values = list()
-                for o, s in zip(obs_sequence.T[0], state_sequence):
-                    guess_values.append(int(states[int(s)]))
-                error_sum += find_path_distance(user_true_values[index], report)
-            elif test_type == 'guess':
-                true_value = (xxhash.xxh32(str(true_value), seed=seed_init2).intdigest() % g)
-                guess_value = obs_sequence[0][0]
-                if guess_value == true_value:
-                    guess_prob_list.append(1)
-                else:
-                    guess_prob_list.append(0)
-            seed_init2 += 1
-        seed_init += 20
-    return np.average(guess_prob_list)
+    return hmm_model_guess(epsilon, k, user_values_list, "OLH", test_type)

@@ -36,7 +36,7 @@ def GRR_Client(input_data, k, epsilon):
         p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
 
         # Mapping domain size k to the range [0, ..., k-1]
-        domain = np.arange(1, k+1)
+        domain = np.arange(1, k + 1)
 
         # GRR perturbation function
         rnd = np.random.random()
@@ -551,7 +551,7 @@ def OLH_Client(input_data_list, k, epsilon, seed_init):
         if rnd > p:
             report_value = np.random.randint(0, g)
         report_list.append(report_value)
-        seed_init+=1
+        seed_init += 1
     return report_list
 
 
@@ -564,7 +564,7 @@ def OLH_Client2(input_data_list, k, epsilon, seed_init):
         report_value = (xxhash.xxh32(str(input_data), seed=seed_init).intdigest() % g)
         rnd = np.random.random()
         if rnd > p:
-            report_value = np.random.randint(0, k)
+            report_value = np.random.randint(0, g)
         report_list.append(report_value)
     return report_list
 

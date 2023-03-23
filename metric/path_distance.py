@@ -21,4 +21,4 @@ def find_path_distance(user_values, guess_values):
 
         error_sum += math.sqrt(((guessX - userX) ** 2) + (guessY - userY) ** 2)
 
-    return error_sum
+    return error_sum / len(user_values)
