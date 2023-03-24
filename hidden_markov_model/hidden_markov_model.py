@@ -104,6 +104,7 @@ def hmm_model_GRR(epsilon, k, train_type, user_value_list=None):
             if i in dict_of_path and i in dict_of_path[i]:
                 sum_of_path = dict_of_path[i][i]
             else:
+                dict_of_path[i] = {}
                 dict_of_path[i][i] = 1
                 sum_of_path += 1
             for element in adjacent_elements:
