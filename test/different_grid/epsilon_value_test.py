@@ -27,13 +27,13 @@ with open('../../grid/taxi_test_different_grid.dat') as f:
 for epsilon in epsilon_list:
 
     print("Epsilon Value: " + str(epsilon))
-    probability_of_guess_grr_plain.append(GRR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
+    probability_of_guess_grr_plain.append(GRR_estimated_guess(users_grid_value_list, k, epsilon, 'path'))
     print("GRR is Ready")
-    probability_of_guess_rappor.append(RAPPOR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
+    probability_of_guess_rappor.append(RAPPOR_estimated_guess(users_grid_value_list, k, epsilon, 'path'))
     print("RAPPOR is Ready")
-    probability_of_guess_oue.append(OUE_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
+    probability_of_guess_oue.append(OUE_estimated_guess(users_grid_value_list, k, epsilon, 'path'))
     print("OUE is Ready")
-    probability_of_guess_olh.append(OLH_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
+    probability_of_guess_olh.append(OLH_estimated_guess(users_grid_value_list, k, epsilon, 'path'))
     print("OLH is Ready")
 
 print(probability_of_guess_grr_plain)
