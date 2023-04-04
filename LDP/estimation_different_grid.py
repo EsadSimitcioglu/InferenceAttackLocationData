@@ -112,10 +112,13 @@ def GRR_estimated_guess(user_values_list, k, epsilon, test_type):
     return guess(epsilon, k, user_values_list, "GRR", test_type, model)
 
 
-def GRR_advance_estimated_guess(user_values_list, k, epsilon, test_type):
-    plain_model = hmm_model_GRR(epsilon, k, 'plain')
-    hmm_values_list = guess(epsilon, k, user_values_list, "GRR", 'advance', plain_model)
-    model = hmm_model_GRR(epsilon, k, 'advance', hmm_values_list)
+def GRR_advance_estimated_guess(user_values_list, k, epsilon, test_count):
+    model = hmm_model_GRR(epsilon, k, 'plain')
+
+    for _ in range(test_count):
+        hmm_values_list = guess(epsilon, k, user_values_list, "GRR", 'advance', model)
+        model = hmm_model_GRR(epsilon, k, 'advance', hmm_values_list)
+
     return guess(epsilon, k, user_values_list, "GRR", 'guess', model)
 
 
@@ -124,10 +127,13 @@ def RAPPOR_estimated_guess(user_values_list, k, epsilon, test_type):
     return guess(epsilon, k, user_values_list, "RAPPOR", test_type, model)
 
 
-def RAPPOR_advance_estimated_guess(user_values_list, k, epsilon, test_type):
-    plain_model = hmm_model_RAPPOR(epsilon, k, 'plain')
-    hmm_values_list = guess(epsilon, k, user_values_list, "RAPPOR", 'advance', plain_model)
-    model = hmm_model_RAPPOR(epsilon, k, 'advance', hmm_values_list)
+def RAPPOR_advance_estimated_guess(user_values_list, k, epsilon, test_count):
+    model = hmm_model_RAPPOR(epsilon, k, 'plain')
+
+    for _ in range(test_count):
+        hmm_values_list = guess(epsilon, k, user_values_list, "RAPPOR", 'advance', model)
+        model = hmm_model_RAPPOR(epsilon, k, 'advance', hmm_values_list)
+
     return guess(epsilon, k, user_values_list, "RAPPOR", 'guess', model)
 
 
@@ -136,10 +142,13 @@ def OUE_estimated_guess(user_values_list, k, epsilon, test_type):
     return guess(epsilon, k, user_values_list, "OUE", test_type, model)
 
 
-def OUE_advance_estimated_guess(user_values_list, k, epsilon, test_type):
-    plain_model = hmm_model_OUE(epsilon, k, 'plain')
-    hmm_values_list = guess(epsilon, k, user_values_list, "OUE", 'advance', plain_model)
-    model = hmm_model_RAPPOR(epsilon, k, 'advance', hmm_values_list)
+def OUE_advance_estimated_guess(user_values_list, k, epsilon, test_count):
+    model = hmm_model_OUE(epsilon, k, 'plain')
+
+    for _ in range(test_count):
+        hmm_values_list = guess(epsilon, k, user_values_list, "OUE", 'advance', model)
+        model = hmm_model_OUE(epsilon, k, 'advance', hmm_values_list)
+
     return guess(epsilon, k, user_values_list, "OUE", 'guess', model)
 
 
