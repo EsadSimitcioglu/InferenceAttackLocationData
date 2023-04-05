@@ -51,7 +51,7 @@ def perturb(protocol_type, epsilon, k, user_true_value_list, seed_value=0):
     return perturbed_reports
 
 
-def guess(epsilon, k, user_true_value_list, protocol_type, test_type, model=None, user_guess_value_list=None ):
+def guess(epsilon, k, user_true_value_list, protocol_type, test_type, model=None, user_guess_value_list=None):
     error_sum = 0
     guess_prob_list = list()
     guess_list = list()
@@ -112,6 +112,11 @@ def GRR_estimated_guess(user_values_list, k, epsilon, test_type):
     return guess(epsilon, k, user_values_list, "GRR", test_type, model)
 
 
+def GRR_FK_estimated_guess(user_values_list, k, epsilon, test_type):
+    model = hmm_model_GRR(epsilon, k, 'advance', user_values_list)
+    return guess(epsilon, k, user_values_list, "GRR", test_type, model)
+
+
 def GRR_advance_estimated_guess(user_values_list, k, epsilon, test_count):
     model = hmm_model_GRR(epsilon, k, 'plain')
 
@@ -124,6 +129,11 @@ def GRR_advance_estimated_guess(user_values_list, k, epsilon, test_count):
 
 def RAPPOR_estimated_guess(user_values_list, k, epsilon, test_type):
     model = hmm_model_RAPPOR(epsilon, k, 'plain')
+    return guess(epsilon, k, user_values_list, "RAPPOR", test_type, model)
+
+
+def RAPPOR_FK_estimated_guess(user_values_list, k, epsilon, test_type):
+    model = hmm_model_RAPPOR(epsilon, k, 'advance', user_values_list)
     return guess(epsilon, k, user_values_list, "RAPPOR", test_type, model)
 
 
@@ -152,6 +162,11 @@ def OUE_advance_estimated_guess(user_values_list, k, epsilon, test_count):
     return guess(epsilon, k, user_values_list, "OUE", 'guess', model)
 
 
+def OUE_FK_estimated_guess(user_values_list, k, epsilon, test_type):
+    model = hmm_model_OUE(epsilon, k, 'advance', user_values_list)
+    return guess(epsilon, k, user_values_list, "OUE", test_type, model)
+
+
 def OLH_estimated_guess(user_values_list, k, epsilon, test_type):
     return guess(epsilon, k, user_values_list, "OLH", test_type)
 
@@ -159,3 +174,7 @@ def OLH_estimated_guess(user_values_list, k, epsilon, test_type):
 def OLH_advance_estimated_guess(user_values_list, k, epsilon, test_type):
     hmm_values_list = guess(epsilon, k, user_values_list, "OLH", 'advance')
     return guess(epsilon, k, user_values_list, "OLH", test_type, user_guess_value_list=hmm_values_list)
+
+
+def OLH_FK_estimated_guess(user_values_list, k, epsilon, test_type):
+    return guess(epsilon, k, user_values_list, "OLH", test_type, user_values_list)
