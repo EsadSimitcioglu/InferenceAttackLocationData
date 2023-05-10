@@ -12,9 +12,9 @@ min_long = 41.14   ### 31.992111
 
 def preprocess_kaggle():
     data = pd.read_csv("dataset/kaggle-taxi-data.csv",
-                    chunksize=10000,
-                    usecols=['POLYLINE', 'TIMESTAMP'],
-                    converters={'POLYLINE': lambda x: json.loads(x) })
+                       chunksize=10000,
+                       usecols=['POLYLINE', 'TIMESTAMP'],
+                       converters={'POLYLINE': lambda x: json.loads(x) })
     with open("dataset/kaggle.csv", 'w') as f:
         f.write("timestamp,lat,lon\n")
 

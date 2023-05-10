@@ -123,7 +123,7 @@ def create_path_list(chunk):
         path_index += 1
     return location_data
 
-data = pd.read_csv("dataset/kaggle-taxi-data.csv",
+data = pd.read_csv("../dataset/kaggle-taxi-data.csv",
                    chunksize=10,
                    usecols=['POLYLINE', 'TRIP_ID'],
                    converters={'POLYLINE': lambda x: json.loads(x), 'TRIP_ID': lambda y: json.loads(y)})
