@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from LDP.estimation_same_grid import grr_estimated_guess, rappor_estimated_guess, oue_estimated_guess, \
+from LDP.estimation_same_grid import grr_estimated_guess, rappor_estimated_guess_advance, oue_estimated_guess_advance, \
     olh_estimated_guess
 
 # Parameters for simulation
@@ -29,10 +29,10 @@ for epsilon in epsilon_list:
     grr_est_freq = grr_estimated_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_grr.append(grr_est_freq)
 
-    rappor_est_freq = rappor_estimated_guess(users_grid_value_list, k, epsilon)
+    rappor_est_freq = rappor_estimated_guess_advance(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_rappor.append(rappor_est_freq)
 
-    oue_est_freq = oue_estimated_guess(users_grid_value_list, k, epsilon)
+    oue_est_freq = oue_estimated_guess_advance(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_oue.append(oue_est_freq)
 
     olh_est_freq = olh_estimated_guess(users_grid_value_list, k, epsilon)
