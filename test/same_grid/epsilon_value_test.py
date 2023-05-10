@@ -43,7 +43,9 @@ for epsilon in epsilon_list:
     probability_of_guess_oue.append(sum(temp_probability_of_guess_oue) / len(temp_probability_of_guess_oue))
     probability_of_guess_olh.append(np.average(temp_probability_of_guess_olh))
 
-print(probability_of_guess_olh)
+print(probability_of_guess_grr)
+print(probability_of_guess_rappor)
+print(probability_of_guess_oue)
 plt.ylim(0, 1)
 plt.xlim(min(epsilon_list), max(epsilon_list))
 plt.plot(epsilon_list, probability_of_guess_grr, label='GRR', color='red')
