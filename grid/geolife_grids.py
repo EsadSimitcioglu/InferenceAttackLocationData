@@ -1,32 +1,28 @@
-import glob
-import os
+import datetime
+
 import pandas as pd
+from matplotlib import pyplot as plt
 from shapely import geometry
 from shapely import ops
-import math
 
-max_lat = 40.21096
-max_long = 121.555706
-min_lat = 31.095299
-min_long = 116.071547
+# Update the bounding box values to match the Microsoft Geolife dataset
+max_lat = 40.05
+max_long = 116.55
+min_lat = 39.8
+min_long = 116.2
 
-write_filename = "../dataset/geolife.dat"
+write_filename = "../grid/geolife.dat"
 
-data_folder = r"C:\\Users\\esat-\\OneDrive\\Masaüstü\\Geolife Trajectories 1.3\\Data"
-
-# Get a list of user folders
-user_folders = [folder for folder in os.listdir(data_folder) if os.path.isdir(os.path.join(data_folder, folder))]
-
-user_folders = user_folders[2:3]
 
 def preprocess_geolife():
+    ##construct the rectangle using shapely
     rec = [(min_lat, min_long), (min_lat, max_long), (max_lat, max_long), (max_lat, min_long)]
-    nx, ny = 4, 5  # number of columns and rows
+    nx, ny = 4, 5
 
     polygon = geometry.Polygon(rec)
     minx, miny, maxx, maxy = polygon.bounds
-    dx = (maxx - minx) / nx  # width of a small part
-    dy = (maxy - miny) / ny  # height of a small part
+    dx = (maxx - minx) / nx
+    dy = (maxy - miny) / ny
     horizontal_splitters = [geometry.LineString([(minx, miny + i * dy), (maxx, miny + i * dy)]) for i in range(ny)]
     vertical_splitters = [geometry.LineString([(minx + i * dx, miny), (minx + i * dx, maxy)]) for i in range(nx)]
     splitters = horizontal_splitters + vertical_splitters
@@ -37,36 +33,61 @@ def preprocess_geolife():
 
     grids = list(result.geoms)
 
+    # Plot the grids
+    x, y = polygon.exterior.xy
+    plt.plot(x, y, color='#6699cc', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
+    for grid in grids:
+        x, y = grid.exterior.xy
+        plt.plot(x, y, color='#6699cc', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
+    plt.show()
+
+    # Read the Microsoft Geolife dataset
+    data = pd.read_csv("../output.csv",
+                       chunksize=10000,
+                       usecols=['Latitude', 'Longitude', 'Date', 'Time'])
+
     out_file = open(write_filename, "w", encoding="utf-8")
 
-    for user_folder in user_folders:
-        trajectory_folder = os.path.join(data_folder, user_folder, 'Trajectory')
+    for i, chunk in enumerate(data):
+        latitudes = chunk['Latitude'].tolist()
+        longitudes = chunk['Longitude'].tolist()
+        dates = chunk['Date'].tolist()
+        times = chunk['Time'].tolist()
 
-        # Get a list of .plt files in the trajectory folder
-        plt_files = glob.glob(os.path.join(trajectory_folder, '*.plt'))
+        first_day = dates[0]
+        first_time = times[0]
 
-        for plt_file in plt_files:
-            data = pd.read_csv(plt_file,
-                               skiprows=6,
-                               header=None,
-                               usecols=[0, 1],
-                               names=['Latitude', 'Longitude'])
+        is_point_founded = False
+        sequence_list = []
 
-            for index, row in data.iterrows():
-                lat = (row['Latitude'])
-                lon = (row['Longitude'])
-                seq = []
-                for j, part in enumerate(grids):
-                    if part.contains(geometry.Point(lat, lon)):
-                        seq.append(str(j + 1))  # Number grids starting from 1
-                if len(seq) == 0:
-                    continue
-                out_file.write(" ".join(seq))
+        # Convert the date and time to a datetime object
+        datetime_str = first_day + " " + first_time
+        previous_datetime_obj = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+
+        for lat, lon, date, times in zip(latitudes, longitudes, dates, times):
+            datetime_str = date + " " + times
+            datetime_obj = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
+
+            # Calculate the time difference between the current point and the first point
+            time_difference = datetime_obj - previous_datetime_obj
+
+            if time_difference.seconds > 1000 and is_point_founded:
+                print("New trajectory : " + datetime_str)
+                out_file.write(" ".join(sequence_list))
                 out_file.write("\n")
+                sequence_list = []
+                previous_datetime_obj = datetime_obj
+                is_point_founded = False
+            elif time_difference.seconds > 60:
+                print("New point : " + datetime_str)
+                point = geometry.Point(lat, lon)
+                for j, part in enumerate(grids):
+                    if part.contains(point):
+                        is_point_founded = True
+                        sequence_list.append(str(j + 1))
+                        break
+                previous_datetime_obj = datetime_obj
 
-            print(seq)
-            print(plt_file, "is done.")
 
-    out_file.close()
-
+# Call the modified function to preprocess the Microsoft Geolife dataset
 preprocess_geolife()
