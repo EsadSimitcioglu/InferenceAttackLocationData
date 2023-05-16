@@ -98,6 +98,13 @@ def create_path_list(chunk):
     print(len(list(result.geoms)))
     grids = list(result.geoms)
 
+    x, y = polygon.exterior.xy
+    plt.plot(x, y, color='#6699cc', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
+    for grid in grids:
+        x, y = grid.exterior.xy
+        plt.plot(x, y, color='#6699cc', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
+    plt.show()
+
     location_data = dict()
 
     path_index = 0

@@ -1,7 +1,9 @@
+import csv
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-from LDP.estimation_same_grid import grr_estimated_guess, rappor_estimated_guess_advance, oue_estimated_guess_advance, \
+from LDP.estimation_same_grid import grr_estimated_guess, rappor_estimated_guess, oue_estimated_guess, \
     olh_estimated_guess
 
 # Parameters for simulation
@@ -14,10 +16,13 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-data = np.genfromtxt('../../grid/taxi_test_same_grid.dat', delimiter=' ', dtype=int)
-
-for user_values in data:
-    users_grid_value_list.append(user_values)
+with open('../../grid/taxi_test_same_grid.dat') as f:
+    reader = csv.reader(f, delimiter="\t")
+    for line in reader:
+        grid_list = line[0].split(" ")
+        grid_list_int = [eval(i) for i in grid_list]
+        grid_list_int_nd = np.array(grid_list_int)
+        users_grid_value_list.append(grid_list_int_nd)
 
 for epsilon in epsilon_list:
     print("Epsilon Value Is: " + str(epsilon))
@@ -29,10 +34,10 @@ for epsilon in epsilon_list:
     grr_est_freq = grr_estimated_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_grr.append(grr_est_freq)
 
-    rappor_est_freq = rappor_estimated_guess_advance(users_grid_value_list, k, epsilon)
+    rappor_est_freq = rappor_estimated_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_rappor.append(rappor_est_freq)
 
-    oue_est_freq = oue_estimated_guess_advance(users_grid_value_list, k, epsilon)
+    oue_est_freq = oue_estimated_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_oue.append(oue_est_freq)
 
     olh_est_freq = olh_estimated_guess(users_grid_value_list, k, epsilon)
@@ -43,16 +48,17 @@ for epsilon in epsilon_list:
     probability_of_guess_oue.append(sum(temp_probability_of_guess_oue) / len(temp_probability_of_guess_oue))
     probability_of_guess_olh.append(np.average(temp_probability_of_guess_olh))
 
-print(probability_of_guess_grr)
-print(probability_of_guess_rappor)
-print(probability_of_guess_oue)
+plt.rcParams.update({'font.size': 12})
+plt.figure(figsize=(4 * 1.33, 4 * 1.33))
+plt.plot(epsilon_list, probability_of_guess_grr, linewidth=2, color='purple', marker='o', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="GRR")
+plt.plot(epsilon_list, probability_of_guess_rappor, linewidth=2, color='grey', marker='s', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="RAPPOR")
+plt.plot(epsilon_list, probability_of_guess_oue, linewidth=2, color='blue', marker='x', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="OUE")
+plt.plot(epsilon_list, probability_of_guess_olh, linewidth=2, color='green', marker='d', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="OLH")
 plt.ylim(0, 1)
-plt.xlim(min(epsilon_list), max(epsilon_list))
-plt.plot(epsilon_list, probability_of_guess_grr, label='GRR', color='red')
-plt.plot(epsilon_list, probability_of_guess_rappor, label='RAPPOR', color='blue')
-plt.plot(epsilon_list, probability_of_guess_oue, label='OUE', color='green')
-plt.plot(epsilon_list, probability_of_guess_olh, label='OLH', color='yellow')
-plt.ylabel('Probability of Guess')
-plt.xlabel('Epsilon values')
-plt.legend(loc='upper right', bbox_to_anchor=(1.015, 1.15))
+plt.xticks(fontsize=15)
+plt.ylabel("Ratio Of Guess")
+plt.xlabel('Epsilon Values')
+plt.grid(linestyle=':')
+plt.legend(prop={'size': 12}, ncol=2, columnspacing=0.75)
+plt.savefig('expected-sr-vs-U.png', format='png', dpi=300, bbox_inches='tight')
 plt.show()

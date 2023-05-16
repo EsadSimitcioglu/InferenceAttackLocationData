@@ -17,7 +17,9 @@ def binary_to_decimal(binary_number):
     return decimal_number
 
 
-def perturb(protocol_type, epsilon, k, user_true_value_list, seed_value=0):
+
+
+def perturb(protocol_type, epsilon, k, user_true_value_list):
     perturbed_reports = list()
     if protocol_type == 'GRR':
         for user_true_values in user_true_value_list:
