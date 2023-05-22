@@ -12,8 +12,6 @@ def grr_estimated_guess(user_values_list, k, epsilon):
         grid_number = user_true_values[0]
         grr_reports = [GRR_Client(user_true_value, k, epsilon) for user_true_value in user_true_values]
         grr_reports_mode = mode(grr_reports)
-        count_of_mode = grr_reports.count(grr_reports_mode)
-        count_of_user_value = grr_reports.count(grid_number)
         if grr_reports_mode == grid_number:
             probability_per_user.append(1)
         else:
@@ -53,33 +51,6 @@ def oue_estimated_guess(user_values_list, k, epsilon):
 
 
 def olh_estimated_guess(user_values_list, k, epsilon):
-    olh_report_list = list()
-    seed_init = 0
-    for user_true_values in user_values_list:
-        true_value = user_true_values[0]
-        olh_reports = OLH_Client2(user_true_values, k, epsilon, seed_init)
-
-        seed_init2 = seed_init
-        probability_list = list()
-        for report in olh_reports:
-            is_add = False
-            for grid_number in range(1, k + 1):
-                grid_number_power = np.repeat(grid_number, 100)
-                olh_guess_reports = OLH_Client2(grid_number_power, k, epsilon, seed_init2)
-                olh_guess_mode = mode(olh_guess_reports)
-                if report == olh_guess_mode and grid_number == true_value:
-                    probability_list.append(1)
-                    is_add = True
-                    break
-            if not is_add:
-                probability_list.append(0)
-        olh_report_list.append(sum(probability_list) / (len(probability_list)))
-        seed_init += 1
-
-    return olh_report_list
-
-
-def olh_estimated_guess2(user_values_list, k, epsilon):
     probability_per_user = list()
     seed_init = 0
 

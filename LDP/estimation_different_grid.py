@@ -17,8 +17,6 @@ def binary_to_decimal(binary_number):
     return decimal_number
 
 
-
-
 def perturb(protocol_type, epsilon, k, user_true_value_list):
     perturbed_reports = list()
     if protocol_type == 'GRR':
@@ -173,10 +171,10 @@ def OLH_estimated_guess(user_values_list, k, epsilon, test_type):
     return guess(epsilon, k, user_values_list, "OLH", test_type)
 
 
-def OLH_advance_estimated_guess(user_values_list, k, epsilon, test_type):
+def OLH_advance_estimated_guess(user_values_list, k, epsilon):
     hmm_values_list = guess(epsilon, k, user_values_list, "OLH", 'advance')
-    return guess(epsilon, k, user_values_list, "OLH", test_type, user_guess_value_list=hmm_values_list)
+    return guess(epsilon, k, user_values_list, "OLH", 'guess', user_guess_value_list=hmm_values_list)
 
 
-def OLH_FK_estimated_guess(user_values_list, k, epsilon, test_type):
-    return guess(epsilon, k, user_values_list, "OLH", test_type, user_values_list)
+def OLH_FK_estimated_guess(user_values_list, k, epsilon):
+    return guess(epsilon, k, user_values_list, "OLH", 'guess', user_values_list)
