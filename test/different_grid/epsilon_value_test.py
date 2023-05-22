@@ -16,7 +16,7 @@ probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
 
-with open('../../grid/geolife.dat') as f:
+with open('../../grid/taxi_test_different_grid.dat') as f:
     reader = csv.reader(f, delimiter="\t")
     for line in reader:
         grid_list = line[0].split(" ")
@@ -34,8 +34,10 @@ for epsilon in epsilon_list:
     print("RAPPOR is Ready")
     probability_of_guess_oue.append(OUE_advance_estimated_guess(users_grid_value_list, k, epsilon, 3))
     print("OUE is Ready")
-    probability_of_guess_olh.append(OLH_advance_estimated_guess(users_grid_value_list, k, epsilon, 3))
+    probability_of_guess_olh.append(OLH_advance_estimated_guess(users_grid_value_list, k, epsilon))
     print("OLH is Ready")
+
+print(probability_of_guess_olh)
 
 plt.rcParams.update({'font.size': 12})
 plt.figure(figsize=(4 * 1.33, 4 * 1.33))
