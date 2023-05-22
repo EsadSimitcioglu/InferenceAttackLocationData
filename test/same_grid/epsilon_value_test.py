@@ -31,17 +31,19 @@ for epsilon in epsilon_list:
     temp_probability_of_guess_oue = list()
     temp_probability_of_guess_olh = list()
 
-    grr_est_freq = grr_estimated_guess(users_grid_value_list, k, epsilon)
-    temp_probability_of_guess_grr.append(grr_est_freq)
+    for _ in range(100):
 
-    rappor_est_freq = rappor_estimated_guess(users_grid_value_list, k, epsilon)
-    temp_probability_of_guess_rappor.append(rappor_est_freq)
+        grr_est_freq = grr_estimated_guess(users_grid_value_list, k, epsilon)
+        temp_probability_of_guess_grr.append(grr_est_freq)
 
-    oue_est_freq = oue_estimated_guess(users_grid_value_list, k, epsilon)
-    temp_probability_of_guess_oue.append(oue_est_freq)
+        rappor_est_freq = rappor_estimated_guess(users_grid_value_list, k, epsilon)
+        temp_probability_of_guess_rappor.append(rappor_est_freq)
 
-    olh_est_freq = olh_estimated_guess(users_grid_value_list, k, epsilon)
-    temp_probability_of_guess_olh.append(olh_est_freq)
+        oue_est_freq = oue_estimated_guess(users_grid_value_list, k, epsilon)
+        temp_probability_of_guess_oue.append(oue_est_freq)
+
+        olh_est_freq = olh_estimated_guess(users_grid_value_list, k, epsilon)
+        temp_probability_of_guess_olh.append(olh_est_freq)
 
     probability_of_guess_grr.append(sum(temp_probability_of_guess_grr) / len(temp_probability_of_guess_grr))
     probability_of_guess_rappor.append(sum(temp_probability_of_guess_rappor) / len(temp_probability_of_guess_rappor))
@@ -60,5 +62,5 @@ plt.ylabel("Ratio Of Guess")
 plt.xlabel('Epsilon Values')
 plt.grid(linestyle=':')
 plt.legend(prop={'size': 12}, ncol=2, columnspacing=0.75)
-plt.savefig('expected-sr-vs-U.png', format='png', dpi=300, bbox_inches='tight')
+plt.savefig('grr_rappor_oue_olh.png', format='png', dpi=300, bbox_inches='tight')
 plt.show()
