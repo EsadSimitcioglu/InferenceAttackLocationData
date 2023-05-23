@@ -6,6 +6,12 @@ import xxhash
 from LDP.protocols import OUE_Client, OLH_Client, SIMPLE_RAPPOR_Client, GRR_Client, OLH_Client2
 
 
+def grr_estimated_guess_per_user(user_values_list, k, epsilon):
+    grr_reports = [GRR_Client(user_true_value, k, epsilon) for user_true_value in user_values_list]
+    grr_reports_mode = mode(grr_reports)
+    return grr_reports_mode
+
+
 def grr_estimated_guess(user_values_list, k, epsilon):
     probability_per_user = list()
     for user_true_values in user_values_list:

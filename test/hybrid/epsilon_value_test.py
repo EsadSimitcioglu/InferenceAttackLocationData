@@ -20,7 +20,7 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-with open('../../grid/taxi_test_different_grid.dat') as f:
+with open('../../grid/geolife.dat') as f:
     reader = csv.reader(f, delimiter="\t")
     for line in reader:
         grid_list = line[0].split(" ")
@@ -35,10 +35,10 @@ for epsilon in epsilon_list:
     temp_probability_of_guess_oue = list()
     temp_probability_of_guess_olh = list()
 
-    grr_est_freq_hybrid = grr_estimated_guess_hybrid(users_grid_value_list, k, epsilon, 4)
+    grr_est_freq_hybrid = grr_estimated_guess_hybrid(users_grid_value_list, k, epsilon, 5)
     probability_of_guess_grr_hybrid.append(grr_est_freq_hybrid)
 
-    grr_est_freq_different = GRR_advance_estimated_guess(users_grid_value_list, k, epsilon, 1)
+    grr_est_freq_different = GRR_advance_estimated_guess(users_grid_value_list, k, epsilon, 3)
     probability_of_guess_grr_different.append(grr_est_freq_different)
 
     grr_est_freq_same = grr_estimated_guess(users_grid_value_list, k, epsilon)
