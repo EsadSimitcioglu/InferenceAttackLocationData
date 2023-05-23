@@ -1,7 +1,7 @@
 import numpy as np
 from statistics import mode
 
-from LDP.estimation_different_grid import guess, perturb
+from LDP.estimation_different_grid import experiment, perturb
 from LDP.protocols import GRR_Client
 from hidden_markov_model.hidden_markov_model import hmm_model_GRR, hmm_model_RAPPOR, hmm_model_OUE, hmm_model_OLH
 
@@ -80,7 +80,7 @@ def grr_estimate_guess(perturbed_reports, model):
 
 def grr_estimated_guess_hybrid(user_values_list, k, epsilon, threshold):
     model = hmm_model_GRR(epsilon, k, 'plain')
-    hmm_guess_list = guess(epsilon, k, user_values_list, "GRR", 'advance', model)
+    hmm_guess_list = experiment(epsilon, k, user_values_list, "GRR", 'advance', model)
     user_perturb_list = perturb("GRR", epsilon, k, user_values_list)
 
     true_guess = 0

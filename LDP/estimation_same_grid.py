@@ -9,7 +9,7 @@ from LDP.protocols import OUE_Client, OLH_Client, SIMPLE_RAPPOR_Client, GRR_Clie
 def grr_estimated_guess(user_values_list, k, epsilon):
     probability_per_user = list()
     for user_true_values in user_values_list:
-        grid_number = user_true_values[0]
+        grid_number = user_true_values[0] - 1
         grr_reports = [GRR_Client(user_true_value, k, epsilon) for user_true_value in user_true_values]
         grr_reports_mode = mode(grr_reports)
         if grr_reports_mode == grid_number:
@@ -53,12 +53,11 @@ def oue_estimated_guess(user_values_list, k, epsilon):
 def olh_estimated_guess(user_values_list, k, epsilon):
     probability_per_user = list()
     seed_init = 0
-
     g = int(round(np.exp(epsilon))) + 1
 
     for user_true_values in user_values_list:
         true_value = user_true_values[0]
-        hash_true_value = (xxhash.xxh32(str(true_value), seed=seed_init).intdigest() % g)
+        hash_true_value = (xxhash.xxh32(str(true_value - 1), seed=seed_init).intdigest() % g)
         olh_reports = OLH_Client2(user_true_values, k, epsilon, seed_init)
         olh_reports_mode = mode(olh_reports)
 

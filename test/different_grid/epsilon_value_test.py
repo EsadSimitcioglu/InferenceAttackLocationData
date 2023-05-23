@@ -37,13 +37,13 @@ for epsilon in epsilon_list:
     probability_of_guess_olh.append(OLH_advance_estimated_guess(users_grid_value_list, k, epsilon))
     print("OLH is Ready")
 
-print(probability_of_guess_olh)
+print(probability_of_guess_grr_plain)
 
 plt.rcParams.update({'font.size': 12})
 plt.figure(figsize=(4 * 1.33, 4 * 1.33))
 plt.plot(epsilon_list, probability_of_guess_grr_plain, linewidth=2, color='purple', marker='o', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="GRR")
-plt.plot(epsilon_list, probability_of_guess_rappor, linewidth=2, color='grey', marker='s', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="RAPPOR")
-plt.plot(epsilon_list, probability_of_guess_oue, linewidth=2, color='blue', marker='x', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="OUE")
+#plt.plot(epsilon_list, probability_of_guess_rappor, linewidth=2, color='grey', marker='s', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="RAPPOR")
+#plt.plot(epsilon_list, probability_of_guess_oue, linewidth=2, color='blue', marker='x', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="OUE")
 plt.plot(epsilon_list, probability_of_guess_olh, linewidth=2, color='green', marker='d', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="OLH")
 plt.ylim(0, 1)
 plt.xticks(fontsize=15)

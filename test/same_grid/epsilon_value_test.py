@@ -31,7 +31,7 @@ for epsilon in epsilon_list:
     temp_probability_of_guess_oue = list()
     temp_probability_of_guess_olh = list()
 
-    for _ in range(100):
+    for _ in range(20):
 
         grr_est_freq = grr_estimated_guess(users_grid_value_list, k, epsilon)
         temp_probability_of_guess_grr.append(grr_est_freq)
@@ -48,7 +48,7 @@ for epsilon in epsilon_list:
     probability_of_guess_grr.append(sum(temp_probability_of_guess_grr) / len(temp_probability_of_guess_grr))
     probability_of_guess_rappor.append(sum(temp_probability_of_guess_rappor) / len(temp_probability_of_guess_rappor))
     probability_of_guess_oue.append(sum(temp_probability_of_guess_oue) / len(temp_probability_of_guess_oue))
-    probability_of_guess_olh.append(np.average(temp_probability_of_guess_olh))
+    probability_of_guess_olh.append(sum(temp_probability_of_guess_olh) / len(temp_probability_of_guess_olh))
 
 plt.rcParams.update({'font.size': 12})
 plt.figure(figsize=(4 * 1.33, 4 * 1.33))
