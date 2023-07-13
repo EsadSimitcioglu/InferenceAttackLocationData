@@ -14,7 +14,7 @@ probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
 
-data = np.genfromtxt('../../grid/taxi_test_same_grid.dat', delimiter=' ', dtype=int)
+data = np.genfromtxt('../../dataset/taxi/taxi_test_same_grid.dat', delimiter=' ', dtype=int)
 
 for user_values in data:
     users_grid_value_list.append(user_values)

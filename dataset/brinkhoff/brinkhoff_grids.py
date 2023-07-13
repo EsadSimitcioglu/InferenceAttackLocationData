@@ -20,7 +20,7 @@ min_lat = 3935.0
 
 
 def preprocess_brinkhoff():
-    with open('../dataset/brinkhoff.dat') as f:
+    with open('brinkhoff.dat') as f:
         reader = csv.reader(f, delimiter="\t")
         for line in reader:
             line_str = line[0]

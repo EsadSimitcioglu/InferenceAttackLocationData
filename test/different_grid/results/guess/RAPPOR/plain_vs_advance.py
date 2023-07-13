@@ -11,7 +11,7 @@ probability_of_guess_rappor_plain = list()
 probability_of_guess_rappor_advance = list()
 probability_of_guess_rappor_fk = list()
 
-with open('../../../../../grid/taxi_test_different_grid.dat') as f:
+with open('../../../../../dataset/taxi/taxi_test_different_grid.dat') as f:
     reader = csv.reader(f, delimiter="\t")
     for line in reader:
         grid_list = line[0].split(" ")
