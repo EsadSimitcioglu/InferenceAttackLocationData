@@ -55,7 +55,7 @@ def preprocess_brinkhoff():
 def create_grid_brinkhoff(users_grid_value_list):
     ##construct the rectangle using shapely
     rec = [(min_lat, min_long), (min_lat, max_long), (max_lat, max_long), (max_lat, min_long)]
-    nx, ny = 4, 5
+    nx, ny = 5, 6
 
     polygon = geometry.Polygon(rec)
     minx, miny, maxx, maxy = polygon.bounds

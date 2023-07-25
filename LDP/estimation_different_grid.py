@@ -166,8 +166,8 @@ def OLH_estimated_guess(user_values_list, k, epsilon, test_type):
     return experiment(epsilon, k, user_values_list, "OLH", test_type)
 
 
-def OLH_advance_estimated_guess(user_values_list, k, epsilon):
-    return experiment(epsilon, k, user_values_list, "OLH", 'guess', user_guess_value_list=user_values_list, test_count=3)
+def OLH_advance_estimated_guess(user_values_list, k, epsilon, test_count):
+    return experiment(epsilon, k, user_values_list, "OLH", 'guess', user_guess_value_list=user_values_list, test_count=test_count)
 
 
 def OLH_FK_estimated_guess(user_values_list, k, epsilon):

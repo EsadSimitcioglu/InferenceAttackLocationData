@@ -255,6 +255,7 @@ def hmm_model_RAPPOR(epsilon, k, train_type, user_value_list=None):
             row_prob_list.append(prob)
         emission_prob_list.append(row_prob_list)
 
+
     model.emissionprob_ = np.array(emission_prob_list)
 
     return model
@@ -352,10 +353,16 @@ def hmm_model_OUE(epsilon, k, train_type, user_value_list=None):
             column = oue_report_list[column_index]
             prob = 1
             for char_index in range(len(row)):
-                if row[char_index] == column[char_index]:
-                    prob *= p
+                if row[char_index] == '1':
+                    if row[char_index] == column[char_index]:
+                        prob *= p
+                    else:
+                        prob *= (1-p)
                 else:
-                    prob *= q
+                    if row[char_index] == column[char_index]:
+                        prob *= (1-q)
+                    else:
+                        prob *= q
             row_prob_list.append(prob)
         emission_prob_list.append(row_prob_list)
 

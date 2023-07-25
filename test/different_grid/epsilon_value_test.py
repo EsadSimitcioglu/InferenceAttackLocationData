@@ -6,7 +6,7 @@ from LDP.estimation_different_grid import GRR_estimated_guess, RAPPOR_estimated_
     OLH_advance_estimated_guess
 
 # Parameters for simulation
-k = 20  # attribute's domain size (grid size)
+k = 20 # attribute's domain size (grid size)
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
 users_grid_value_list = list()
 probability_of_guess_grr_plain = list()
@@ -28,16 +28,18 @@ with open('../../dataset/brinkhoff/brinkhoff_grid_small.dat') as f:
 for epsilon in epsilon_list:
 
     print("Epsilon Value: " + str(epsilon))
-    probability_of_guess_grr_plain.append(GRR_advance_estimated_guess(users_grid_value_list, k, epsilon, 3))
+    probability_of_guess_grr_plain.append(GRR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("GRR is Ready")
-    probability_of_guess_rappor.append(RAPPOR_advance_estimated_guess(users_grid_value_list, k, epsilon, 3))
+    probability_of_guess_rappor.append(RAPPOR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("RAPPOR is Ready")
-    probability_of_guess_oue.append(OUE_advance_estimated_guess(users_grid_value_list, k, epsilon, 3))
+    probability_of_guess_oue.append(OUE_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("OUE is Ready")
-    probability_of_guess_olh.append(OLH_estimated_guess(users_grid_value_list, k, epsilon, 3))
+    probability_of_guess_olh.append(OLH_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("OLH is Ready")
 
+    print(probability_of_guess_oue)
 
+print(probability_of_guess_oue)
 plt.rcParams.update({'font.size': 12})
 plt.figure(figsize=(4 * 1.33, 4 * 1.33))
 plt.plot(epsilon_list, probability_of_guess_grr_plain, linewidth=2, color='purple', marker='o', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="GRR")
