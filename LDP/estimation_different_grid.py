@@ -1,7 +1,7 @@
 import numpy as np
 
 from hidden_markov_model.hidden_markov_model import hmm_model_GRR, hmm_model_RAPPOR, hmm_model_OUE, hmm_model_OLH, guess
-from LDP.protocols import GRR_Client, SIMPLE_RAPPOR_Client, OUE_Client, OLH_Client2
+from LDP.protocols import GRR_Client, SIMPLE_RAPPOR_Client, OUE_Client, OLH_Client2, OLH_RAPPOR_Client
 from metric.path_distance import find_path_distance, ratio_of_guess
 
 states = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
@@ -47,6 +47,11 @@ def perturb(protocol_type, epsilon, k, user_true_value_list):
         for user_true_values in user_true_value_list:
             perturbed_reports.append(OLH_Client2(user_true_values, k, epsilon, seed_value))
             seed_value += 1
+    elif protocol_type == "OLH_RAPPOR":
+        seed_value = 1
+        for user_true_values in user_true_value_list:
+            perturbed_reports.append(OLH_RAPPOR_Client(user_true_values, k, epsilon, seed_value))
+            seed_value += 1
 
     return perturbed_reports
 
@@ -55,6 +60,9 @@ def experiment(epsilon, k, user_values_list, protocol_type, test_type, model=Non
                test_count=None):
     path_metric = 0
     guess_metric = list()
+
+    file = open("guess.csv", "a")
+    file.write("\nepsilon: " + str(epsilon) + ", protocol: " + str(protocol_type) + "\n")
 
     perturbed_reports = perturb(protocol_type, epsilon, k, user_values_list)
 
@@ -68,17 +76,21 @@ def experiment(epsilon, k, user_values_list, protocol_type, test_type, model=Non
                 for _ in range(test_count):
                     guess_list = list()
                     perturbed_value_list = perturb(protocol_type='OLH', epsilon=epsilon, k=k,
-                                                   user_true_value_list=user_values_list)
+                                                   user_true_value_list=[user_perturbed_report])
 
                     for perturbed_value in perturbed_value_list:
                         guess_list.append(guess(model, perturbed_value))
                     model = hmm_model_OLH(epsilon, k, index + 1, 'advance', guess_list)
+        elif protocol_type == "OLH_RAPPOR":
+            g = int(round(np.exp(epsilon))) + 1
+            model = hmm_model_RAPPOR(epsilon, g, 'plain')
 
         guessed_users_value = guess(model, user_perturbed_report)
 
         if test_type == 'path':
             path_metric += find_path_distance(user_values_list[index], guessed_users_value)
         elif test_type == 'guess':
+            file.write(str(guessed_users_value) + "\n")
             guess_metric.append(ratio_of_guess(user_values_list[index], guessed_users_value))
 
     if test_type == 'path':
@@ -126,13 +138,12 @@ def RAPPOR_advance_estimated_guess(user_values_list, k, epsilon, test_count):
 
     for _ in range(test_count):
         guess_from_hmm = list()
-        perturbed_value_list = perturb(protocol_type='RAPPOR', epsilon=epsilon, k=k, user_true_value_list=user_values_list)
+        perturbed_value_list = perturb(protocol_type='RAPPOR', epsilon=epsilon, k=k,
+                                       user_true_value_list=user_values_list)
 
         for perturbed_value in perturbed_value_list:
             guess_from_hmm.append(guess(model, perturbed_value))
         model = hmm_model_RAPPOR(epsilon, k, 'advance', guess_from_hmm)
-
-
 
     return experiment(epsilon, k, user_values_list, "RAPPOR", 'guess', model)
 
@@ -167,8 +178,13 @@ def OLH_estimated_guess(user_values_list, k, epsilon, test_type):
 
 
 def OLH_advance_estimated_guess(user_values_list, k, epsilon, test_count):
-    return experiment(epsilon, k, user_values_list, "OLH", 'guess', user_guess_value_list=user_values_list, test_count=test_count)
+    return experiment(epsilon, k, user_values_list, "OLH", 'guess', user_guess_value_list=user_values_list,
+                      test_count=test_count)
 
 
-def OLH_FK_estimated_guess(user_values_list, k, epsilon):
-    return experiment(epsilon, k, user_values_list, "OLH", 'guess', user_values_list)
+def OLH_FK_estimated_guess(user_values_list, k, epsilon, test_type):
+    return experiment(epsilon, k, user_values_list, "OLH", test_type, user_values_list)
+
+
+def OLH_bit_vector(user_values_list, k, epsilon, test_type):
+    return experiment(epsilon, k, user_values_list, "OLH_RAPPOR", test_type)

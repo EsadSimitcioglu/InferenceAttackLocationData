@@ -569,6 +569,17 @@ def OLH_Client2(input_data_list, k, epsilon, seed_init):
         report_list.append(report_value)
     return report_list
 
+def OLH_RAPPOR_Client(input_data_list, k, epsilon, seed_init):
+    p = exp(epsilon) / (exp(epsilon) + k - 1)
+    g = int(round(np.exp(epsilon))) + 1
+    report_list = list()
+
+    for input_data in input_data_list:
+        input_data -= 1
+        report_value = (xxhash.xxh32(str(input_data), seed=seed_init).intdigest() % g)
+        bit_vector = SIMPLE_RAPPOR_Client(report_value, g, epsilon)
+        report_list.append(bit_vector)
+    return report_list
 
 def OLH_Aggregator(perturbed_datas, n, k, epsilon):
     g = int(round(exp(epsilon))) + 1

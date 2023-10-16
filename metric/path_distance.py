@@ -16,13 +16,12 @@ def find_path_distance(user_values_list, guess_values_list):
     error_sum = 0
 
     for user_values, guess_values in zip(user_values_list, guess_values_list):
-        for element_index in range(len(user_values)):
-            userX, userY = find_coordinate(user_values[element_index])
-            guessX, guessY = find_coordinate(guess_values[element_index])
+        userX, userY = find_coordinate(user_values)
+        guessX, guessY = find_coordinate(guess_values)
 
-            error_sum += math.sqrt(((guessX - userX) ** 2) + (guessY - userY) ** 2)
+        error_sum += math.sqrt(((guessX - userX) ** 2) + (guessY - userY) ** 2)
 
-        error_sum /= len(user_values)
+    error_sum /= len(user_values_list)
 
     return error_sum
 

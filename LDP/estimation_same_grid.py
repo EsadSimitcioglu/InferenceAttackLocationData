@@ -4,6 +4,7 @@ import numpy as np
 import xxhash
 from collections import Counter
 
+from numpy import exp
 
 from LDP.protocols import OUE_Client, OLH_Client, SIMPLE_RAPPOR_Client, GRR_Client, OLH_Client2
 
@@ -74,15 +75,12 @@ def oue_estimated_guess(user_values_list, k, epsilon):
 
 def olh_estimated_guess(user_values_list, k, epsilon):
     probability_per_user = list()
-    seed_init = 0
+    seed_init = 1
     g = int(round(np.exp(epsilon))) + 1
-
-
 
     for user_true_values in user_values_list:
         true_value = user_true_values[0]
         olh_reports = OLH_Client2(user_true_values, k, epsilon, seed_init)
-
         olh_reports_mode = find_mode(olh_reports)
 
         grid_list = list()
@@ -90,10 +88,10 @@ def olh_estimated_guess(user_values_list, k, epsilon):
             grid_number_power = np.repeat(grid_number, 100)
             olh_guess_reports = OLH_Client2(grid_number_power, k, epsilon, seed_init)
             olh_guess_mode = find_mode(olh_guess_reports)
-            if olh_reports_mode == olh_guess_mode:
+            if olh_guess_mode == olh_reports_mode:
                 grid_list.append(grid_number)
 
-        if len(grid_list) > 1:
+        if len(grid_list) >= 1:
             random_grid = random.choice(grid_list)
             if random_grid == true_value:
                 probability_per_user.append(1)
