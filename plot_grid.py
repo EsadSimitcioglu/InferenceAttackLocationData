@@ -39,11 +39,11 @@ ax.imshow(map_image, extent=[minx, maxx, miny, maxy], aspect='auto')
 
 # Your existing code to plot polygons and grids
 x, y = polygon.exterior.xy
-plt.plot(x, y, color='#6699cc', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
+plt.plot(x, y, color='#000000', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
 
 for grid in grids:
     x, y = grid.exterior.xy
-    plt.plot(x, y, color='#6699cc', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
+    plt.plot(x, y, color='#000000', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
 
 # Remove axis labels and ticks
 ax.set_xticks([])
@@ -54,5 +54,3 @@ ax.grid(False)
 
 # Show the plot
 plt.show()
-
-
