@@ -29,7 +29,7 @@ grids = list(result.geoms)
 
 
 # Load the map image (replace 'map_image.jpg' with the actual path to your map image)
-map_image = Image.open('ss.png')
+map_image = Image.open('../ss.png')
 
 # Create a new figure
 fig, ax = plt.subplots()

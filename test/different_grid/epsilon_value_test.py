@@ -9,6 +9,8 @@ from LDP.estimation_different_grid import GRR_estimated_guess, RAPPOR_estimated_
 
 from LDP.estimation_same_grid import grr_estimated_guess, rappor_estimated_guess, oue_estimated_guess, olh_estimated_guess
 
+from LDP.protocol_esad import OLH_bit_vector
+
 # Parameters for simulation
 k = 20  # attribute's domain size (grid size)
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
@@ -29,17 +31,21 @@ with open('../../dataset/taxi/taxi_test_different_grid.dat') as f:
         grid_list_int_nd = np.array(grid_list_int)
         users_grid_value_list.append(grid_list_int_nd)
 
+
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
+    g = int(round(np.exp(epsilon))) + 1
+    print("G Value: " + str(g))
     probability_of_guess_olh_bit_vector.append(OLH_bit_vector(users_grid_value_list, k, epsilon, 'guess'))
-    probability_of_guess_grr_plain.append(grr_estimated_guess(users_grid_value_list, k, epsilon))
+    #probability_of_guess_grr_plain.append(GRR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("GRR is Ready")
-    #probability_of_guess_rappor.append(rappor_estimated_guess(users_grid_value_list, k, epsilon))
+    #probability_of_guess_rappor.append(RAPPOR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("RAPPOR is Ready")
-    probability_of_guess_oue.append(oue_estimated_guess(users_grid_value_list, k, epsilon))
+    #probability_of_guess_oue.append(OUE_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("OUE is Ready")
-    probability_of_guess_olh.append(olh_estimated_guess(users_grid_value_list, k, epsilon))
+    #probability_of_guess_olh.append(OLH_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("OLH is Ready")
+    print(probability_of_guess_olh_bit_vector)
 
 print("GRR: " + str(probability_of_guess_grr_plain))
 print("RAPPOR: " + str(probability_of_guess_rappor))

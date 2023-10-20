@@ -8,6 +8,7 @@ from sys import maxsize
 # [3] Ding, Kulkarni, and Yekhanin (2017) "Collecting telemetry data privately." (NeurIPS).
 from numpy import exp
 
+
 seeds = np.arange(200)
 seed_counter = 0
 
@@ -574,11 +575,23 @@ def OLH_RAPPOR_Client(input_data_list, k, epsilon, seed_init):
     g = int(round(np.exp(epsilon))) + 1
     report_list = list()
 
+    def binary_to_decimal(binary_number):
+        decimal_number = 0
+        index_counter = len(binary_number) - 1
+
+        for number in binary_number:
+            decimal_number += (int(number) * (2 ** index_counter))
+            index_counter -= 1
+        return decimal_number
+
     for input_data in input_data_list:
         input_data -= 1
         report_value = (xxhash.xxh32(str(input_data), seed=seed_init).intdigest() % g)
         bit_vector = SIMPLE_RAPPOR_Client(report_value, g, epsilon)
-        report_list.append(bit_vector)
+        report_string = ""
+        for rappor_report in bit_vector:
+            report_string += str(int(rappor_report))
+        report_list.append(binary_to_decimal(report_string))
     return report_list
 
 def OLH_Aggregator(perturbed_datas, n, k, epsilon):
