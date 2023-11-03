@@ -2,14 +2,7 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 from LDP.estimation_different_grid import GRR_estimated_guess, RAPPOR_estimated_guess, OUE_estimated_guess, \
-    OLH_estimated_guess, OLH_bit_vector, GRR_advance_estimated_guess, RAPPOR_advance_estimated_guess, \
-    OUE_advance_estimated_guess, \
-    OLH_advance_estimated_guess, GRR_FK_estimated_guess, RAPPOR_FK_estimated_guess, OUE_FK_estimated_guess, \
-    OLH_FK_estimated_guess
-
-from LDP.estimation_same_grid import grr_estimated_guess, rappor_estimated_guess, oue_estimated_guess, olh_estimated_guess
-
-from LDP.protocol_esad import OLH_bit_vector
+    OLH_estimated_guess
 
 # Parameters for simulation
 k = 20  # attribute's domain size (grid size)
@@ -34,24 +27,19 @@ with open('../../dataset/taxi/taxi_test_different_grid.dat') as f:
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
-    g = int(round(np.exp(epsilon))) + 1
-    print("G Value: " + str(g))
-    probability_of_guess_olh_bit_vector.append(OLH_bit_vector(users_grid_value_list, k, epsilon, 'guess'))
-    #probability_of_guess_grr_plain.append(GRR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
+    probability_of_guess_grr_plain.append(GRR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("GRR is Ready")
-    #probability_of_guess_rappor.append(RAPPOR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
+    probability_of_guess_rappor.append(RAPPOR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("RAPPOR is Ready")
-    #probability_of_guess_oue.append(OUE_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
+    probability_of_guess_oue.append(OUE_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("OUE is Ready")
-    #probability_of_guess_olh.append(OLH_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
+    probability_of_guess_olh.append(OLH_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
     print("OLH is Ready")
-    print(probability_of_guess_olh_bit_vector)
 
 print("GRR: " + str(probability_of_guess_grr_plain))
 print("RAPPOR: " + str(probability_of_guess_rappor))
 print("OUE: " + str(probability_of_guess_oue))
 print("OLH: " + str(probability_of_guess_olh))
-print("HASH BIT VECTOR: " + str(probability_of_guess_olh_bit_vector))
 
 plt.rcParams.update({'font.size': 12})
 plt.figure(figsize=(4 * 1.33, 4 * 1.33))
@@ -63,8 +51,6 @@ plt.plot(epsilon_list, probability_of_guess_oue, linewidth=2, color='blue', mark
          fillstyle='none', clip_on=False, label="OUE")
 plt.plot(epsilon_list, probability_of_guess_olh, linewidth=2, color='green', marker='d', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="OLH")
-plt.plot(epsilon_list, probability_of_guess_olh_bit_vector, linewidth=2, color='green', marker='d', markersize=10, mew=1.5,
-         fillstyle='none', clip_on=False, label="ESAD")
 plt.xticks(fontsize=15)
 plt.ylim(0, 1)
 plt.ylabel("Ratio Of Guess")

@@ -1,6 +1,8 @@
 from matplotlib import pyplot as plt
 
 iter_list = [1, 3, 5, 7, 9]
+epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
+
 
 """
 Epsilon = 0.5
@@ -74,26 +76,25 @@ oue_list = [0.7102176955820053, 0.8687034491868275, 0.8249950845134657, 0.830215
 olh_list = [0.7589147578993848, 0.7577317615379543, 0.7691937052186641, 0.7581626834148998, 0.7609707792184294]
 """
 
-
-
-
-
+grr_list = [170.2298928440721, 144.73049347046185, 120.84039708690256, 97.83927119471895, 74.45103880612855, 52.73541283431363, 35.8466930070474, 23.770472406930786, 9.920957992983006]
+rappor_list = [161.8945256819678, 144.13853940566847, 126.7903936764233, 107.68423130152324, 87.98683948245399, 69.88649755182419, 54.172070833059045, 41.71435938239403, 25.6607383318864]
+oue_list = [160.7370662150607, 138.1002969082098, 114.83907853180958, 94.20986993349288, 77.46702964734902, 65.26439940533083, 56.879656102078776, 51.44488813600627, 45.82220028124503]
+olh_list = [173.4212231080396, 177.7684634818918, 188.6664215242388, 135.83949921170972, 106.37917407273844, 79.81421704855919, 55.22719572364427, 35.96423252110303, 14.15589652656669]
 
 
 
 plt.rcParams.update({'font.size': 12})
 plt.figure(figsize=(4 * 1.33, 4 * 1.33))
-plt.plot(iter_list, grr_list, linewidth=2, color='purple', marker='o', markersize=10, mew=1.5,
+plt.plot(epsilon_list, grr_list, linewidth=2, color='purple', marker='o', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="GRR")
-plt.plot(iter_list, rappor_list, linewidth=2, color='grey', marker='s', markersize=10, mew=1.5,
+plt.plot(epsilon_list, rappor_list, linewidth=2, color='grey', marker='s', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="RAPPOR")
-plt.plot(iter_list, oue_list, linewidth=2, color='blue', marker='x', markersize=10, mew=1.5,
+plt.plot(epsilon_list, oue_list, linewidth=2, color='blue', marker='x', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="OUE")
-plt.plot(iter_list, olh_list, linewidth=2, color='green', marker='d', markersize=10, mew=1.5,
+plt.plot(epsilon_list, olh_list, linewidth=2, color='green', marker='d', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="OLH")
 plt.xticks(fontsize=15)
 plt.ylim(0,1)
-plt.title("Epsilon = " + str(Epsilon), fontsize=15)
 plt.ylabel("Ratio Of Guess")
 plt.xlabel('Iteration')
 plt.grid(linestyle=':')

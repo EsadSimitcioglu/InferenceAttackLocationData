@@ -5,14 +5,12 @@ from matplotlib import pyplot as plt
 from shapely import geometry
 from shapely import ops
 
-## This script builds the sequential data file by constructing grids from coordinates
+max_lat = -8.58
+max_long = 41.18
+min_lat = -8.68
+min_long = 41.14
 
-max_lat = -8.58  ##-8.28    ### 52.900803
-max_long = 41.18  ### 51.037119
-min_lat = -8.68  ##-8.78    ### -9.781308
-min_long = 41.14  ### 31.992111
-
-write_filename = "../dataset/taxi.dat"
+write_filename = "taxi2.dat"
 
 
 def preprocess_kaggle():
@@ -130,15 +128,53 @@ def create_path_list(chunk):
         path_index += 1
     return location_data
 
-data = pd.read_csv("../dataset/kaggle-taxi-data.csv",
-                   chunksize=10,
-                   usecols=['POLYLINE', 'TRIP_ID'],
-                   converters={'POLYLINE': lambda x: json.loads(x), 'TRIP_ID': lambda y: json.loads(y)})
+rec = [(min_lat, min_long), (min_lat, max_long), (max_lat, max_long), (max_lat, min_long)]
+nx, ny = 4, 5  # number of columns and rows  4,5
 
+polygon = geometry.Polygon(rec)
+minx, miny, maxx, maxy = polygon.bounds
+dx = (maxx - minx) / nx  # width of a small part
+dy = (maxy - miny) / ny  # height of a small part
+horizontal_splitters = [geometry.LineString([(minx, miny + i * dy), (maxx, miny + i * dy)]) for i in range(ny)]
+vertical_splitters = [geometry.LineString([(minx + i * dx, miny), (minx + i * dx, maxy)]) for i in range(nx)]
+splitters = horizontal_splitters + vertical_splitters
 
-location_data = dict()
-for i, chunk in enumerate(data):
-    location_data = create_path_list(chunk)
-    break
+result = polygon
+for splitter in splitters:
+    result = geometry.MultiPolygon(ops.split(result, splitter))
 
-print(location_data)
+parts = [list(part.exterior.coords) for part in result.geoms]  ####
+#print(parts)  ####
+#print(len(list(result.geoms)))
+grids = list(result.geoms)
+
+# Initialize a list to store the middle points of each cell and their colors
+middle_points = []
+colors = []
+
+for grid in grids:
+    # Calculate the centroid of each polygon (cell)
+    centroid = grid.centroid
+    middle_points.append(centroid)
+
+    # Assign a color to each point (you can customize this as needed)
+    colors.append('red')  # Change 'red' to your desired color
+
+# Now, `middle_points` contains the middle points of every cell, and `colors` contains their respective colors.
+
+# Plot the original polygon
+x, y = polygon.exterior.xy
+plt.plot(x, y, color='#6699cc', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
+
+# Plot the cells (polygons)
+for grid in grids:
+    x, y = grid.exterior.xy
+    plt.plot(x, y, color='#6699cc', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
+
+# Plot all the middle points with their assigned colors
+for centroid, color in zip(middle_points, colors):
+    print(centroid.x, centroid.y)
+    plt.scatter(centroid.x, centroid.y, color=color, s=50)  # Adjust 's' for point size
+
+plt.show()
+
