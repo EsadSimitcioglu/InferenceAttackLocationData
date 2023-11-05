@@ -1,2 +1,0 @@
-taxi_GRR_3.5_plain_attack
-0.6430519067167316

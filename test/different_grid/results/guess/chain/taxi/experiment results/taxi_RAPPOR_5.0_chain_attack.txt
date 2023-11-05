@@ -1,2 +1,0 @@
-taxi_RAPPOR_5.0_chain_attack
-0.9666249871052968

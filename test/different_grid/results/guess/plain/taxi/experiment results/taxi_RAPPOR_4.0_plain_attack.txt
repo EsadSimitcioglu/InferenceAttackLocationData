@@ -1,2 +1,0 @@
-taxi_RAPPOR_4.0_plain_attack
-0.5896005758226767

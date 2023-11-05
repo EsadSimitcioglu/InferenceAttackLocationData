@@ -1,55 +1,62 @@
-import csv
-import numpy as np
 import matplotlib.pyplot as plt
-from LDP.estimation_different_grid import GRR_estimated_guess, RAPPOR_estimated_guess, OUE_estimated_guess, \
-    OLH_estimated_guess
 
-# Parameters for simulation
-k = 20  # attribute's domain size (grid size)
-epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
+from LDP.protocols.GRR import GRR
+from LDP.protocols.OLH import OLH
+from LDP.protocols.OUE import OUE
+from LDP.protocols.RAPPOR import RAPPOR
+from experiment.attack.transit.guess_trajectory import guess_plain_user_trajectory, guess_plain_user_trajectory_olh
+from dataset.helper import read_dataset
+
+from hidden_markov_model.HMM import HMM
+
+k = 20
+epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]
 iter_list = [1, 2, 3, 4, 5]
 users_grid_value_list = list()
-probability_of_guess_grr_plain = list()
-probability_of_guess_grr_trained = list()
+probability_of_guess_grr = list()
 probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
-probability_of_guess_olh_bit_vector = list()
 
-with open('../../dataset/taxi/taxi_test_different_grid.dat') as f:
-    reader = csv.reader(f, delimiter="\t")
-    for line in reader:
-        grid_list = line[0].split(" ")
-        grid_list_int = [eval(i) for i in grid_list]
-        grid_list_int_nd = np.array(grid_list_int)
-        users_grid_value_list.append(grid_list_int_nd)
-
+user_trajectory_list = read_dataset('../../dataset/taxi/taxi_test_different_grid.dat')
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
-    probability_of_guess_grr_plain.append(GRR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
-    print("GRR is Ready")
-    probability_of_guess_rappor.append(RAPPOR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
-    print("RAPPOR is Ready")
-    probability_of_guess_oue.append(OUE_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
-    print("OUE is Ready")
-    probability_of_guess_olh.append(OLH_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
-    print("OLH is Ready")
 
-print("GRR: " + str(probability_of_guess_grr_plain))
+    grr = GRR(k, epsilon)
+    grr_model = HMM(k, epsilon)
+    probability_of_guess_grr.append(guess_plain_user_trajectory(grr, grr_model, user_trajectory_list))
+    print("GRR is Ready")
+
+    rappor = RAPPOR(k, epsilon)
+    rappor_model = HMM(k, epsilon)
+    probability_of_guess_rappor.append(guess_plain_user_trajectory(rappor, rappor_model, user_trajectory_list))
+    print("RAPPOR is Ready")
+
+    oue = OUE(k, epsilon)
+    oue_model = HMM(k, epsilon)
+    probability_of_guess_oue.append(guess_plain_user_trajectory(oue, oue_model, user_trajectory_list))
+    print("OUE is Ready")
+
+    olh = OLH(k, epsilon)
+    olh_model = HMM(k, epsilon)
+    probability_of_guess_olh.append(guess_plain_user_trajectory_olh(olh, olh_model, user_trajectory_list))
+
+
+print("GRR: " + str(probability_of_guess_grr))
 print("RAPPOR: " + str(probability_of_guess_rappor))
 print("OUE: " + str(probability_of_guess_oue))
 print("OLH: " + str(probability_of_guess_olh))
 
 plt.rcParams.update({'font.size': 12})
 plt.figure(figsize=(4 * 1.33, 4 * 1.33))
-plt.plot(epsilon_list, probability_of_guess_grr_plain, linewidth=2, color='purple', marker='o', markersize=10, mew=1.5,
+plt.plot(epsilon_list, probability_of_guess_grr, linewidth=2, color='purple', marker='o', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="GRR")
 plt.plot(epsilon_list, probability_of_guess_rappor, linewidth=2, color='grey', marker='s', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="RAPPOR")
 plt.plot(epsilon_list, probability_of_guess_oue, linewidth=2, color='blue', marker='x', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="OUE")
-plt.plot(epsilon_list, probability_of_guess_olh, linewidth=2, color='green', marker='d', markersize=10, mew=1.5,
+plt.plot(epsilon_list, probability_of_guess_olh, linewidth=2, color='yellow', marker='x', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="OLH")
 plt.xticks(fontsize=15)
 plt.ylim(0, 1)

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from LDP.estimation_same_grid import grr_estimated_guess, rappor_estimated_guess, oue_estimated_guess
+from experiment.attack.stationary.guess_trajectory import grr_estimated_guess, rappor_estimated_guess, oue_estimated_guess
 
 # Parameters for simulation
 n = 20  # number of timestamps
