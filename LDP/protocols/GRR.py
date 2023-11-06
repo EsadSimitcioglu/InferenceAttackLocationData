@@ -48,7 +48,7 @@ class GRR:
 
         return norm_est_freq
 
-    def client_memoized(self, input_list):
+    def memoized(self, input_list):
         perturbed_list = list()
 
         for user_trajectory in input_list:
@@ -56,12 +56,12 @@ class GRR:
             memoization_dict = dict()
             prev_value = -1
             for input_data in user_trajectory:
-                if input_data == prev_value:
-                    if input_data not in memoization_dict:
-                        memoization_dict[input_data] = self.client(input_data)
-                    user_list.append(self.client(memoization_dict[input_data]))
+                if input_data != prev_value:
+                    fake_input_value = self.client(input_data)
+                    memoization_dict[input_data] = fake_input_value+1
+                    user_list.append(self.client(fake_input_value))
                 else:
-                    user_list.append(self.client(input_data))
+                    user_list.append(self.client(memoization_dict[input_data]))
                 prev_value = input_data
             perturbed_list.append(user_list)
 

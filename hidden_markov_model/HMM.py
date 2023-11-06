@@ -115,6 +115,9 @@ class HMM:
 
         column_value_list = create_emission_matrix_column(self.k)
 
+        keep_bit_prob = ((rappor.p ** 2) + (rappor.q ** 2)) if rappor.is_memoized else rappor.p
+        flip_bit_prob = (2 * rappor.p * rappor.q) if rappor.is_memoized else rappor.q
+
         emission_prob_list = list()
         for row_index in range(len(column_value_list)):
             row = column_value_list[row_index]
@@ -124,9 +127,9 @@ class HMM:
                 prob = 1
                 for char_index in range(len(row)):
                     if row[char_index] == column[char_index]:
-                        prob *= rappor.p
+                        prob *= keep_bit_prob
                     else:
-                        prob *= rappor.q
+                        prob *= flip_bit_prob
                 row_prob_list.append(prob)
             emission_prob_list.append(row_prob_list)
 

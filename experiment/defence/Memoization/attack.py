@@ -1,60 +1,60 @@
-import csv
-import numpy as np
 from matplotlib import pyplot as plt
 
-from LDP.estimation_different_grid import GRR_estimated_guess
-from hidden_markov_model.hidden_markov_model import hmm_model_GRR_MEMOIZED, guess
+from LDP.protocols.GRR import GRR
+from LDP.protocols.RAPPOR import RAPPOR
+from dataset.helper import read_dataset
+from experiment.attack.transit.guess_trajectory import guess_plain_user_trajectory
+from hidden_markov_model.HMM import HMM
+from hidden_markov_model.helper import ratio_of_guess
 
-from LDP.protocols import GRR_Memoization_Client, RAPPOR_Client
-from metric.path_distance import ratio_of_guess
 
-
-def experiment(epsilon, k, user_values_list):
-    guess_metric = list()
-
-    perturbed_reports = RAPPOR_Client(users_grid_value_list, k, epsilon)
-
-    for index, user_perturbed_report in enumerate(perturbed_reports):
-        model = hmm_model_GRR_MEMOIZED(epsilon,k)
-        guessed_users_value_first_layer = guess(model, user_perturbed_report)
-        guess_metric.append(ratio_of_guess(user_values_list[index], guessed_users_value_first_layer))
-
-    return np.average(guess_metric)
+def experiment(protocol, hmm_model, user_trajectory_list):
+    perturbed_reports = protocol.memoized(users_grid_value_list)
+    hmm_model.create_plain_protocol_model(protocol)
+    guess_list = [hmm_model.guess_user_values(report) for report in perturbed_reports]
+    ratio = sum([ratio_of_guess(user_trajectory, guess) for user_trajectory, guess in
+                 zip(user_trajectory_list, guess_list)]) / len(user_trajectory_list)
+    return ratio
 
 # Parameters for simulation
 k = 20  # attribute's domain size (grid size)
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
-iter_list = [1, 2, 3, 4, 5]
 users_grid_value_list = list()
-probability_of_guess_grr_plain = list()
+probability_of_guess_grr = list()
 probability_of_guess_grr_memoized = list()
-probability_of_guess_grr_trained = list()
 probability_of_guess_rappor = list()
-probability_of_guess_oue = list()
-probability_of_guess_olh = list()
-probability_of_guess_olh_bit_vector = list()
+probability_of_guess_rappor_memoized = list()
 
-with open('../../../dataset/taxi/taxi_grid.dat') as f:
-    reader = csv.reader(f, delimiter="\t")
-    for line in reader:
-        grid_list = line[0].split(" ")
-        grid_list_int = [eval(i) for i in grid_list]
-        grid_list_int_nd = np.array(grid_list_int)
-        users_grid_value_list.append(grid_list_int_nd)
-
+user_trajectory_list = read_dataset('../../../dataset/taxi/taxi_test_different_grid.dat')
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
-    probability_of_guess_grr_memoized.append(experiment(epsilon, k, users_grid_value_list))
-    probability_of_guess_grr_plain.append(GRR_estimated_guess(users_grid_value_list, k, epsilon, 'guess'))
 
+    grr = GRR(k, epsilon)
+    grr_model = HMM(k, epsilon)
+    probability_of_guess_grr.append(guess_plain_user_trajectory(grr, grr_model, users_grid_value_list))
+
+    grr_m = GRR(k, epsilon)
+    grr_m_model = HMM(k, epsilon)
+    probability_of_guess_grr_memoized.append(experiment(grr_m, grr_m_model, users_grid_value_list))
+
+    # rappor = RAPPOR(k, epsilon)
+    # rappor_model = HMM(k, epsilon)
+    # probability_of_guess_rappor.append(guess_plain_user_trajectory(rappor, rappor_model, users_grid_value_list))
+    # print("RAPPOR is Ready")
+
+    # rappor_m = RAPPOR(k, epsilon)
+    # rappor_m_model = HMM(k, epsilon)
+    # probability_of_guess_rappor_memoized.append(experiment(rappor_m, rappor_m_model, users_grid_value_list))
+    # print("RAPPOR_M is Ready")
 
 plt.rcParams.update({'font.size': 12})
 plt.figure(figsize=(4 * 1.33, 4 * 1.33))
-plt.plot(epsilon_list, probability_of_guess_grr_memoized, linewidth=2, color='purple', marker='o', markersize=10, mew=1.5,
-         fillstyle='none', clip_on=False, label="GRR-Memoized")
-plt.plot(epsilon_list, probability_of_guess_grr_plain, linewidth=2, color='grey', marker='o', markersize=10, mew=1.5,
+plt.plot(epsilon_list, probability_of_guess_grr, linewidth=2, color='red', marker='o', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="GRR")
+plt.plot(epsilon_list, probability_of_guess_grr_memoized, linewidth=2, color='purple', marker='o', markersize=10,
+         mew=1.5,
+         fillstyle='none', clip_on=False, label="GRR-Memoized")
 plt.xticks(fontsize=15)
 plt.ylim(0, 1)
 plt.ylabel("Ratio Of Guess")
