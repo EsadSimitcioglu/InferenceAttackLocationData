@@ -5,6 +5,7 @@ from shapely import ops
 
 users_grid_value_list = list()
 
+
 # min and max values for float
 min_x = 9999999999
 max_x = -9999999999
@@ -20,6 +21,13 @@ min_lat = 3935.0
 
 
 def preprocess_brinkhoff():
+
+    global min_x  # Declare min_x as global
+    global min_y  # Declare min_y as global
+
+    global max_x  # Declare max_x as global
+    global max_y  # Declare max_y as global
+
     with open('brinkhoff.dat') as f:
         reader = csv.reader(f, delimiter="\t")
         for line in reader:
@@ -52,10 +60,10 @@ def preprocess_brinkhoff():
                 users_grid_value_list.append(user_grid_list)
 
 
-def create_grid_brinkhoff(users_grid_value_list):
+def create_grid_brinkhoff():
     ##construct the rectangle using shapely
     rec = [(min_lat, min_long), (min_lat, max_long), (max_lat, max_long), (max_lat, min_long)]
-    nx, ny = 5, 6
+    nx, ny = 4, 5
 
     polygon = geometry.Polygon(rec)
     minx, miny, maxx, maxy = polygon.bounds
@@ -79,7 +87,7 @@ def create_grid_brinkhoff(users_grid_value_list):
         plt.plot(x, y, color='#6699cc', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
     plt.show()
 
-    with open('brinkhoff_grid.dat', 'w', newline='') as file:
+    with open('brinkhoff_grid3.dat', 'w', newline='') as file:
         for user in users_grid_value_list:
             sequence_list = []
             for user_trajectory in user:
@@ -101,5 +109,8 @@ def create_grid_brinkhoff(users_grid_value_list):
         file.close()
 
 
+# Call the function to preprocess the Brinkhoff dataset
+preprocess_brinkhoff()
+
 # Call the modified function to preprocess the Microsoft Geolife dataset
-create_grid_brinkhoff(users_grid_value_list)
+create_grid_brinkhoff()
