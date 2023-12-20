@@ -1,7 +1,20 @@
-| Stationary Experiment                       | Estimation Percentage Metric |
-| ------------------------------------------  | ---------------------------- |
-| Statistical Inferences with Mode Attack     | :white_check_mark:           |
 
+# Inference Attack On Location Data
+
+
+## Experiments
+
+### Stationary Experiment
+
+| Stationary Experiment                   | Estimation Percentage Metric |
+| --------------------------------------- | ---------------------------- |
+| Statistical Inferences with Mode Attack | :white_check_mark:           |
+
+### Transit Experiment
+
+| Iteration Experiment       | Estimation Percentage Metric |
+| ---------------------      | ---------------------------- |
+| Optimal $\alpha$           | :white_check_mark:           |
 
 | Transit Experiment | Estimation Percentage Metric | Path Metric   |
 | ------------------ | ---------------------------- | ------------- |
@@ -9,11 +22,10 @@
 | Chain Attack       | :white_check_mark:           | :x:             |
 | Inference Attack   | :white_check_mark:           | :x:             |
 
-
+### Dataset 
 
 | Dataset            | Plain Attack on Stationary Dataset | Statistical Inferences with Mode Attack on Transit Dataset |
 | ------------------ | ----------------------------------- | ------------------------------------------------------- |
-| Taxi Dataset       | <div style="text-align:center">:x:</div> | <div style="text-align:center">:x:</div>                                                     |
-| Geolife Dataset    | <div style="text-align:center">:x:</div> | <div style="text-align:center">:x:</div>                                                     |
-| Brinkoff Dataset   | <div style="text-align:center">:x:</div> | <div style="text-align:center">:x:</div>                                                     |
-
+| Taxi Dataset       | :x:                                 | :x:                                                     |
+| Geolife Dataset    | :x:                                 | :x:                                                     |
+| Brinkoff Dataset   | :x:                                 | :x:                                                     |
