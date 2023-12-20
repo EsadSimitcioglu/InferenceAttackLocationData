@@ -13,6 +13,7 @@
 
 | Dataset            | Plain Attack on Stationary Dataset | Statistical Inferences with Mode Attack on Transit Dataset |
 | ------------------ | ----------------------------------- | ------------------------------------------------------- |
-| Taxi Dataset       | :x:                                 | :x:                                                     |
-| Geolife Dataset    | :x:                                 | :x:                                                     |
-| Brinkoff Dataset   | :x:                                 | :x:                                                     |
+| Taxi Dataset       | <div style="text-align:center">:x:</div> | <div style="text-align:center">:x:</div>                                                     |
+| Geolife Dataset    | <div style="text-align:center">:x:</div> | <div style="text-align:center">:x:</div>                                                     |
+| Brinkoff Dataset   | <div style="text-align:center">:x:</div> | <div style="text-align:center">:x:</div>                                                     |
+
