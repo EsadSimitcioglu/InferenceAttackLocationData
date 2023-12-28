@@ -1,15 +1,11 @@
 import numpy as np
 import xxhash
 from hmmlearn import hmm
-import csv
 
-from matplotlib import pyplot as plt
-
-from LDP.protocols import HBV_Client
-from hidden_markov_model.hidden_markov_model import guess, getAdjacent
+from test.script.hidden_markov_model.hidden_markov_model import guess
 from metric.path_distance import ratio_of_guess
 
-from LDP.protocols import GRR_Client, GRR_Aggregator, HBV_Client, HBV_Aggregator
+from LDP.protocols import HBV_Client
 
 
 def binary_to_decimal(binary_number):

@@ -1,3 +1,6 @@
+import csv
+
+
 def ratio_of_guess(true_value_list, guess_value_list):
     prob_sum = 0
     index_counter = 0
@@ -47,6 +50,16 @@ def guess_fk_user_trajectory(protocol, hmm_model, user_trajectory_list):
     report_list = perturb(protocol, user_trajectory_list)
     hmm_model.create_advance_protocol_model(protocol, user_trajectory_list)
     guess_list = [hmm_model.guess_user_values(report) for report in report_list]
+
+    file_path = protocol.name + '-' + protocol.epsilon + '_fk_guess.csv'
+
+    with open(file_path, 'w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=' ')
+
+        # Write each list as a row in the CSV file
+        for row in guess_list:
+            csv_writer.writerow(row)
+
     ratio = sum([ratio_of_guess(user_trajectory, guess) for user_trajectory, guess in
                  zip(user_trajectory_list, guess_list)]) / len(user_trajectory_list)
     return ratio
@@ -54,11 +67,24 @@ def guess_fk_user_trajectory(protocol, hmm_model, user_trajectory_list):
 
 def guess_fk_user_trajectory_olh(protocol, hmm_model, user_trajectory_list):
     report_list = perturb(protocol, user_trajectory_list)
+    guess_list_prime = list()
     ratio_list = list()
     for user_index, report in enumerate(report_list):
         hmm_model.create_advance_protocol_model(protocol, user_trajectory_list, user_index + 1)
         guess_list = hmm_model.guess_user_values(report)
+        guess_list_prime.append(guess_list)
         ratio_list.append(ratio_of_guess(user_trajectory_list[user_index], guess_list))
+
+    file_path = protocol.name + '-' + protocol.epsilon + '_fk_guess.csv'
+
+    with open(file_path, 'w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=' ')
+
+        # Write each list as a row in the CSV file
+        for row in guess_list_prime:
+            csv_writer.writerow(row)
+
+
     return sum(ratio_list) / len(ratio_list)
 
 

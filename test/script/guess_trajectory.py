@@ -1,0 +1,119 @@
+import csv
+
+
+def ratio_of_guess(true_value_list, guess_value_list):
+    prob_sum = 0
+    index_counter = 0
+
+    for guess_value, true_value in zip(guess_value_list, true_value_list):
+        if guess_value == true_value:
+            prob_sum += 1
+        index_counter += 1
+
+    return prob_sum / index_counter
+
+
+def perturb(protocol, user_trajectory_list):
+    reports = list()
+    for user_index, user_trajectory in enumerate(user_trajectory_list):
+        if protocol.is_hash_used:
+            report = ([protocol.client(user_value, user_index + 1) for user_value in user_trajectory])
+        else:
+            report = ([protocol.client(user_value) for user_value in user_trajectory])
+
+        if protocol.is_bit_vector:
+            report = [protocol.convert_binary_report_to_decimal(report_string) for report_string in report]
+        reports.append(report)
+    return reports
+
+
+def guess_plain_user_trajectory(protocol, hmm_model, user_trajectory_list):
+    report_list = perturb(protocol, user_trajectory_list)
+    hmm_model.create_plain_protocol_model(protocol)
+    guess_list = [hmm_model.guess_user_values(report) for report in report_list]
+    ratio = sum([ratio_of_guess(user_trajectory, guess) for user_trajectory, guess in
+                 zip(user_trajectory_list, guess_list)]) / len(user_trajectory_list)
+    return ratio
+
+
+def guess_plain_user_trajectory_olh(protocol, hmm_model, user_trajectory_list):
+    report_list = perturb(protocol, user_trajectory_list)
+    ratio_list = list()
+    for user_index, report in enumerate(report_list):
+        hmm_model.create_plain_protocol_model(protocol, user_index + 1)
+        guess_list = hmm_model.guess_user_values(report)
+        ratio_list.append(ratio_of_guess(user_trajectory_list[user_index], guess_list))
+    return sum(ratio_list) / len(ratio_list)
+
+
+def guess_fk_user_trajectory(protocol, hmm_model, user_trajectory_list):
+    report_list = perturb(protocol, user_trajectory_list)
+    hmm_model.create_advance_protocol_model(protocol, user_trajectory_list)
+    guess_list = [hmm_model.guess_user_values(report) for report in report_list]
+
+    file_path = protocol.name + '-' + protocol.epsilon + '_fk_guess.csv'
+
+    with open(file_path, 'w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=' ')
+
+        # Write each list as a row in the CSV file
+        for row in guess_list:
+            csv_writer.writerow(row)
+
+    ratio = sum([ratio_of_guess(user_trajectory, guess) for user_trajectory, guess in
+                 zip(user_trajectory_list, guess_list)]) / len(user_trajectory_list)
+    return ratio
+
+
+def guess_fk_user_trajectory_olh(protocol, hmm_model, user_trajectory_list):
+    report_list = perturb(protocol, user_trajectory_list)
+    guess_list_prime = list()
+    ratio_list = list()
+    for user_index, report in enumerate(report_list):
+        hmm_model.create_advance_protocol_model(protocol, user_trajectory_list, user_index + 1)
+        guess_list = hmm_model.guess_user_values(report)
+        guess_list_prime.append(guess_list)
+        ratio_list.append(ratio_of_guess(user_trajectory_list[user_index], guess_list))
+
+    file_path = protocol.name + '-' + protocol.epsilon + '_fk_guess.csv'
+
+    with open(file_path, 'w', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=' ')
+
+        # Write each list as a row in the CSV file
+        for row in guess_list_prime:
+            csv_writer.writerow(row)
+
+
+    return sum(ratio_list) / len(ratio_list)
+
+
+def guess_advance_user_trajectory(protocol, hmm_model, user_trajectory_list, test_count):
+    hmm_model.create_plain_protocol_model(protocol)
+
+    for _ in range(test_count):
+        report_list = perturb(protocol, user_trajectory_list)
+        guess_list = [hmm_model.guess_user_values(report) for report in report_list]
+        hmm_model.create_advance_protocol_model(protocol, guess_list)
+
+    report_list = perturb(protocol, user_trajectory_list)
+    guess_list = [hmm_model.guess_user_values(report) for report in report_list]
+    ratio = sum([ratio_of_guess(user_trajectory, guess) for user_trajectory, guess in
+                 zip(user_trajectory_list, guess_list)]) / len(user_trajectory_list)
+    return ratio
+
+
+def guess_advance_user_trajectory_olh(protocol, hmm_model, user_trajectory_list, test_count):
+    ratio_list = list()
+    report_list = perturb(protocol, user_trajectory_list)
+    for user_index, report in enumerate(report_list):
+        hmm_model.create_plain_protocol_model(protocol, user_index + 1)
+
+        for _ in range(test_count):
+            test_report_list = perturb(protocol, [user_trajectory_list[user_index]])
+            guess_list = [hmm_model.guess_user_values(report) for report in test_report_list]
+            hmm_model.create_advance_protocol_model(protocol, guess_list, user_index + 1)
+
+        guess_list = hmm_model.guess_user_values(report)
+        ratio_list.append(ratio_of_guess(user_trajectory_list[user_index], guess_list))
+    return sum(ratio_list) / len(ratio_list)

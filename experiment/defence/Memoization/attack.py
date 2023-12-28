@@ -1,11 +1,10 @@
 from matplotlib import pyplot as plt
 
 from LDP.protocols.GRR import GRR
-from LDP.protocols.RAPPOR import RAPPOR
 from dataset.helper import read_dataset
 from experiment.attack.transit.guess_trajectory import guess_plain_user_trajectory
-from hidden_markov_model.HMM import HMM
-from hidden_markov_model.helper import ratio_of_guess
+from test.script.hidden_markov_model.HMM import HMM
+from test.script.hidden_markov_model.helper import ratio_of_guess
 
 
 def experiment(protocol, hmm_model, user_trajectory_list):
