@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from experiment.attack.stationary.guess_trajectory import grr_estimated_guess, rappor_estimated_guess, oue_estimated_guess, \
-    olh_estimated_guess
+    olh_estimated_guess, rappor_informed_guess, oue_informed_guess, grr_informed_guess, olh_informed_guess
 
 # Parameters for simulation
 n = 20  # number of timestamps
@@ -16,7 +16,7 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-with open('../../dataset/geolife/geolife_stationary_grid.dat') as f:
+with open('../../dataset/taxi/taxi_grid_same2.dat') as f:
     reader = csv.reader(f, delimiter="\t")
     for line in reader:
         grid_list = line[0].split(" ")
@@ -31,16 +31,16 @@ for epsilon in epsilon_list:
     temp_probability_of_guess_oue = list()
     temp_probability_of_guess_olh = list()
 
-    grr_est_freq = grr_estimated_guess(users_grid_value_list, k, epsilon)
+    grr_est_freq = grr_informed_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_grr.append(grr_est_freq)
 
-    rappor_est_freq = rappor_estimated_guess(users_grid_value_list, k, epsilon)
+    rappor_est_freq = rappor_informed_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_rappor.append(rappor_est_freq)
 
-    oue_est_freq = oue_estimated_guess(users_grid_value_list, k, epsilon)
+    oue_est_freq = oue_informed_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_oue.append(oue_est_freq)
 
-    olh_est_freq = olh_estimated_guess(users_grid_value_list, k, epsilon)
+    olh_est_freq = olh_informed_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_olh.append(olh_est_freq)
 
     probability_of_guess_grr.append(sum(temp_probability_of_guess_grr) / len(temp_probability_of_guess_grr))

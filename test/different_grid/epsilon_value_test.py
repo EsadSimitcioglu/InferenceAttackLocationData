@@ -4,13 +4,12 @@ from LDP.protocols.GRR import GRR
 from LDP.protocols.OLH import OLH
 from LDP.protocols.OUE import OUE
 from LDP.protocols.RAPPOR import RAPPOR
-from experiment.attack.transit.guess_trajectory import guess_fk_user_trajectory, guess_fk_user_trajectory_olh
+from experiment.attack.transit.guess_trajectory import guess_advance_user_trajectory, guess_advance_user_trajectory_olh
 from dataset.helper import read_dataset
-
-from test.script.hidden_markov_model.HMM import HMM
+from hidden_markov_model.HMM import HMM
 
 k = 20
-epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]
+epsilon_list = [3, 3.5]
 iter_list = [1, 2, 3, 4, 5]
 users_grid_value_list = list()
 probability_of_guess_grr = list()
@@ -18,29 +17,30 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-user_trajectory_list = read_dataset('../../dataset/taxi/taxi_stationary_grid.dat')
+user_trajectory_list = read_dataset('../../dataset/taxi/taxi_grid.dat')
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
 
     grr = GRR(k, epsilon)
     grr_model = HMM(k, epsilon)
-    probability_of_guess_grr.append(guess_fk_user_trajectory(grr, grr_model, user_trajectory_list))
+    probability_of_guess_grr.append(guess_advance_user_trajectory(grr, grr_model, user_trajectory_list, 0))
     print("GRR is Ready")
 
     rappor = RAPPOR(k, epsilon)
     rappor_model = HMM(k, epsilon)
-    probability_of_guess_rappor.append(guess_fk_user_trajectory(rappor, rappor_model, user_trajectory_list))
+    probability_of_guess_rappor.append(guess_advance_user_trajectory(rappor, rappor_model, user_trajectory_list, 0))
     print("RAPPOR is Ready")
 
     oue = OUE(k, epsilon)
     oue_model = HMM(k, epsilon)
-    probability_of_guess_oue.append(guess_fk_user_trajectory(oue, oue_model, user_trajectory_list))
+    probability_of_guess_oue.append(guess_advance_user_trajectory(oue, oue_model, user_trajectory_list, 0))
     print("OUE is Ready")
 
     olh = OLH(k, epsilon)
     olh_model = HMM(k, epsilon)
-    probability_of_guess_olh.append(guess_fk_user_trajectory_olh(olh, olh_model, user_trajectory_list))
+    probability_of_guess_olh.append(guess_advance_user_trajectory_olh(olh, olh_model, user_trajectory_list, 0))
+    print("OLH is Ready")
 
 
 print("GRR: " + str(probability_of_guess_grr))
