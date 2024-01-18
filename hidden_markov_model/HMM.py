@@ -16,8 +16,8 @@ class HMM:
 
     def guess_user_values(self, user_perturbed_report):
         obs_sequence_list = []
-        for perturbed_report in user_perturbed_report:
-            obs_sequence_list.append(perturbed_report)
+        for index, perturbed_report in enumerate(user_perturbed_report):
+            obs_sequence_list.append(index)
         obs_sequence = np.array([obs_sequence_list]).T
 
         _, state_sequence = self.model.decode(obs_sequence)
@@ -135,6 +135,43 @@ class HMM:
 
         self.model.emissionprob_ = np.array(emission_prob_list)
 
+    def create_rappor_eff(self, rappor, user_value_list):
+        self.model = hmm.MultinomialHMM(n_components=self.k, algorithm='viterbi')
+        self.config_plain_model()
+
+        row_value_list = list()
+        for user_val in user_value_list:
+            row_value_list.append((bin(user_val)[2:].zfill(rappor.k)))
+
+        column_value_list = create_emission_matrix_column(self.k)
+
+        keep_bit_prob = ((rappor.p ** 2) + (rappor.q ** 2)) if rappor.is_memoized else rappor.p
+        flip_bit_prob = (2 * rappor.p * rappor.q) if rappor.is_memoized else rappor.q
+
+        emission_prob_list = list()
+        for row_index in range(len(column_value_list)):
+            row = column_value_list[row_index]
+            row_prob_list = list()
+            for column_index in range(len(row_value_list)):
+                column = row_value_list[column_index]
+                prob = 1
+                for char_index in range(len(row)):
+                    if row[char_index] == column[char_index]:
+                        prob *= keep_bit_prob
+                    else:
+                        prob *= flip_bit_prob
+                row_prob_list.append(prob)
+
+            # Normalize row_prob_list
+            sum_prob = sum(row_prob_list)
+            for i in range(len(row_prob_list)):
+                row_prob_list[i] /= sum_prob
+            emission_prob_list.append(row_prob_list)
+
+        self.model.emissionprob_ = np.array(emission_prob_list)
+
+
+
     def create_oue_emission_matrix(self, oue, seed):
         row_value_list = create_emission_matrix_rows(self.k)
 
@@ -188,5 +225,4 @@ class HMM:
         emission_function = f"create_{protocol.name}_emission_matrix"
         self.config_advance_model(users_trajectory_list)
         getattr(self, emission_function)(protocol, seed)
-
 

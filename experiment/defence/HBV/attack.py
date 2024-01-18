@@ -1,11 +1,14 @@
+import csv
+
 import numpy as np
 import xxhash
 from hmmlearn import hmm
 
-from test.script.hidden_markov_model.hidden_markov_model import guess
-from metric.path_distance import ratio_of_guess
 
-from LDP.protocols import HBV_Client
+
+from LDP.protocols.HBV import HBV
+from hidden_markov_model.helper import ratio_of_guess
+from hidden_markov_model.hidden_markov_model import guess
 
 
 def binary_to_decimal(binary_number):
@@ -25,12 +28,16 @@ def OLH_bit_vector(user_values_list, k, epsilon):
 def perturb(epsilon, k, user_true_value_list):
     perturbed_reports = list()
     seed_value = 1
+    hbv = HBV(k, epsilon)
     for user_true_values in user_true_value_list:
-        bit_vector = HBV_Client(user_true_values, epsilon, seed_value)
-        report_string = ""
-        for rappor_report in bit_vector:
-            report_string += str(int(rappor_report))
-        perturbed_reports.append(binary_to_decimal(report_string))
+        user_perturbed_report = list()
+        bit_vector_list = hbv.client(user_true_values, seed_value)
+        for report in bit_vector_list:
+            report_string = ""
+            for rappor_report in report:
+                report_string += str(int(rappor_report))
+            user_perturbed_report.append(binary_to_decimal(report_string))
+        perturbed_reports.append(user_perturbed_report)
         seed_value += 1
 
     return perturbed_reports
@@ -97,3 +104,19 @@ def hmm_model_HBV(epsilon, k, seed_counter, train_type, user_value_list=None):
     model.emissionprob_ = np.array(emission_prob_list)
 
     return model
+
+
+users_grid_value_list = list()
+epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
+
+with open('../../../dataset/taxi/taxi_grid_2.dat') as f:
+    reader = csv.reader(f, delimiter="\t")
+    for line in reader:
+        grid_list = line[0].split(" ")
+        grid_list_int = [eval(i) for i in grid_list]
+        grid_list_int_nd = np.array(grid_list_int)
+        users_grid_value_list.append(grid_list_int_nd)
+
+for epsilon in epsilon_list:
+    print("Epsilon Value: " + str(epsilon))
+    print(OLH_bit_vector(users_grid_value_list, 20, epsilon))

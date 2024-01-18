@@ -2,8 +2,25 @@ from matplotlib import pyplot as plt
 import csv
 import numpy as np
 
-from LDP.protocols import GRR_Aggregator, GRR_Client, HBV_Client, HBV_Aggregator
+from LDP.protocols.GRR import GRR
 
+from LDP.protocols.HBV import HBV
+
+def calculate_average_error(actual_hist, noisy_hist):
+    err_sum = 0
+    for bar_key in range(len(actual_hist)):
+        err_sum += abs(noisy_hist[bar_key] - actual_hist[bar_key])
+
+    avg_err = err_sum / len(actual_hist)
+    return avg_err
+
+def calculate_mean_square_error(actual_hist, noisy_hist):
+    err_sum = 0
+    for bar_key in range(len(actual_hist)):
+        err_sum += (noisy_hist[bar_key] - actual_hist[bar_key]) ** 2
+
+    avg_err = err_sum / len(actual_hist)
+    return avg_err
 
 def create_histogram(est_frequency, k):
     plt.rcParams.update({'font.size': 12})
@@ -21,35 +38,51 @@ def dataset_histogram(users_grid_value_list, k):
     for user_trajectory in users_grid_value_list:
         for user_value in user_trajectory:
             grid_count[user_value - 1] += 1
+
+    # Calculate the percentage of users in each grid
+    total_users = sum(grid_count)
+    for grid in range(k):
+        grid_count[grid] = grid_count[grid] / total_users
+
+    a = sum(grid_count)
+
+    #
+
+
     create_histogram(grid_count, k)
+    return grid_count
+
+def grr_client_aggregator(users_grid_value_list, epsilon):
+
+    grr = GRR(k, epsilon)
+    grr_report_list = list()
+    for user_trajectory in users_grid_value_list:
+        user_perturb_list = list()
+        for user_value in user_trajectory:
+            user_perturb_list.append(grr.client(user_value))
+        grr_report_list.append(user_perturb_list)
+    est = grr.server(grr_report_list)
+    create_histogram(est, k)
+
+    return est
 
 
-def grr_client_aggregator():
-    for epsilon in epsilon_list:
-        print("Epsilon Value: " + str(epsilon))
-        grr_report_list = list()
-        for user_trajectory in users_grid_value_list:
-            user_perturb_list = list()
-            for user_value in user_trajectory:
-                user_perturb_list.append(GRR_Client(user_value, k, epsilon))
-            grr_report_list.append(user_perturb_list)
-        est = GRR_Aggregator(grr_report_list, k, epsilon)
-        create_histogram(est, k)
 
 
-def hbv_client_aggregator(users_grid_value_list, epsilon_list):
+def hbv_client_aggregator(users_grid_value_list, epsilon):
     grr_report_list = list()
     seed = 1
 
-    for epsilon in epsilon_list:
-        print("Epsilon Value: " + str(epsilon))
-        for user_trajectory in users_grid_value_list:
-            grr_report_list.append(HBV_Client(user_trajectory, epsilon, seed))
-            seed += 1
+    hbv = HBV(k, epsilon)
+    for user_trajectory in users_grid_value_list:
+        grr_report_list.append(hbv.client(user_trajectory, seed))
+        seed += 1
 
-        est = HBV_Aggregator(grr_report_list, 100, k, epsilon)
+    est = hbv.server(grr_report_list)
 
-        create_histogram(est, k)
+    create_histogram(est, k)
+
+    return est
 
 
 if __name__ == '__main__':
@@ -66,7 +99,7 @@ if __name__ == '__main__':
     probability_of_guess_olh = list()
     probability_of_guess_olh_bit_vector = list()
 
-    with open('../../../dataset/taxi/taxi_test_different_grid.dat') as f:
+    with open('../../../dataset/taxi/taxi_grid_2.dat') as f:
         reader = csv.reader(f, delimiter="\t")
         for line in reader:
             grid_list = line[0].split(" ")
@@ -74,5 +107,13 @@ if __name__ == '__main__':
             grid_list_int_nd = np.array(grid_list_int)
             users_grid_value_list.append(grid_list_int_nd)
 
-    dataset_histogram(users_grid_value_list, k)
-    hbv_client_aggregator(users_grid_value_list, epsilon_list)
+    actual_hist = dataset_histogram(users_grid_value_list, k)
+    a = sum(actual_hist)
+    for epsilon in epsilon_list:
+        print("*" * 50)
+        print("Epsilon Value: " + str(epsilon))
+        noisy_hist = hbv_client_aggregator(users_grid_value_list, epsilon)
+        avg_err = calculate_average_error(actual_hist, noisy_hist)
+        mse_err = calculate_mean_square_error(actual_hist, noisy_hist)
+        print("Average Error: " + str(avg_err))
+        print("Mean Square Error: " + str(mse_err))

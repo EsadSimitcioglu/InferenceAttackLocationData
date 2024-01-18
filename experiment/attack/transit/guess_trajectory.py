@@ -35,6 +35,15 @@ def guess_plain_user_trajectory(protocol, hmm_model, user_trajectory_list):
                  zip(user_trajectory_list, guess_list)]) / len(user_trajectory_list)
     return ratio
 
+def deneme(protocol, hmm_model, user_trajectory_list):
+    report_list = perturb(protocol, user_trajectory_list)
+    ratio_list = list()
+    for user_index, report in enumerate(report_list):
+        hmm_model.create_rappor_eff(protocol, report)
+        guess_list = hmm_model.guess_user_values(report)
+        ratio_list.append(ratio_of_guess(user_trajectory_list[user_index], guess_list))
+    return sum(ratio_list) / len(ratio_list)
+
 
 def guess_plain_user_trajectory_olh(protocol, hmm_model, user_trajectory_list):
     report_list = perturb(protocol, user_trajectory_list)
