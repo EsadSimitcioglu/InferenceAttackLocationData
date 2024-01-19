@@ -16,8 +16,8 @@ class HMM:
 
     def guess_user_values(self, user_perturbed_report):
         obs_sequence_list = []
-        for index, perturbed_report in enumerate(user_perturbed_report):
-            obs_sequence_list.append(index)
+        for perturbed_report in (user_perturbed_report):
+            obs_sequence_list.append(perturbed_report)
         obs_sequence = np.array([obs_sequence_list]).T
 
         _, state_sequence = self.model.decode(obs_sequence)

@@ -31,16 +31,16 @@ for epsilon in epsilon_list:
     temp_probability_of_guess_oue = list()
     temp_probability_of_guess_olh = list()
 
-    grr_est_freq = grr_informed_guess(users_grid_value_list, k, epsilon)
+    grr_est_freq = grr_estimated_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_grr.append(grr_est_freq)
 
-    rappor_est_freq = rappor_informed_guess(users_grid_value_list, k, epsilon)
+    rappor_est_freq = rappor_estimated_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_rappor.append(rappor_est_freq)
 
-    oue_est_freq = oue_informed_guess(users_grid_value_list, k, epsilon)
+    oue_est_freq = oue_estimated_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_oue.append(oue_est_freq)
 
-    olh_est_freq = olh_informed_guess(users_grid_value_list, k, epsilon)
+    olh_est_freq = olh_estimated_guess(users_grid_value_list, k, epsilon)
     temp_probability_of_guess_olh.append(olh_est_freq)
 
     probability_of_guess_grr.append(sum(temp_probability_of_guess_grr) / len(temp_probability_of_guess_grr))
@@ -57,7 +57,7 @@ print("Probability Of Guess For OLH: " + str(probability_of_guess_olh))
 
 plt.rcParams.update({'font.size': 12})
 plt.figure(figsize=(4 * 1.33, 4 * 1.33))
-plt.title("Geolife")
+plt.title("Taxi SIM Informed")
 plt.plot(epsilon_list, probability_of_guess_grr, linewidth=2, color='purple', marker='o', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="GRR")
 plt.plot(epsilon_list, probability_of_guess_rappor, linewidth=2, color='grey', marker='s', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="RAPPOR")
 plt.plot(epsilon_list, probability_of_guess_oue, linewidth=2, color='blue', marker='x', markersize=10, mew=1.5, fillstyle='none', clip_on=False, label="OUE")
