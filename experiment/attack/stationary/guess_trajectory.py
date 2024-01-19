@@ -224,7 +224,11 @@ def olh_informed_guess(user_values_list, k, epsilon):
 
     for user_true_values in user_values_list:
         true_value = user_true_values[0]
-        olh_reports = [olh.client(user_true_value, seed_init) for user_true_value in user_true_values]
+        olh_reports = list()
+
+        for user_true_value in user_true_values:
+            olh_reports.append(olh.client(user_true_value, seed_init))
+            seed_init += 1
         olh_reports_mode = find_mode(olh_reports)
 
         grid_list = list()
@@ -254,6 +258,5 @@ def olh_informed_guess(user_values_list, k, epsilon):
                 probability_per_user.append(0)
         else:
             probability_per_user.append(0)
-        seed_init += 1
 
     return sum(probability_per_user) / (len(user_values_list))
