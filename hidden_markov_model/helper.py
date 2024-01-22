@@ -96,3 +96,17 @@ def ratio_of_guess(true_value_list, guess_value_list):
         index_counter += 1
 
     return prob_sum / index_counter
+
+
+def decimal_to_binary(decimal_num, k):
+    if decimal_num == 0:
+        return '0' * k
+    binary_num = ''
+    while decimal_num > 0:
+        remainder = decimal_num % 2
+        binary_num = str(remainder) + binary_num
+        decimal_num = decimal_num // 2
+    if len(binary_num) < k:
+        padding = '0' * (k - len(binary_num))
+        binary_num = padding + binary_num
+    return binary_num

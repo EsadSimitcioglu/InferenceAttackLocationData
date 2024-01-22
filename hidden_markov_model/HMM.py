@@ -1,7 +1,9 @@
 import numpy as np
 import xxhash
 from hmmlearn import hmm
-from hidden_markov_model.helper import getAdjacent, analyze_taken_path, create_emission_matrix_rows, create_emission_matrix_column
+from hidden_markov_model.helper import getAdjacent, analyze_taken_path, create_emission_matrix_rows, \
+    create_emission_matrix_column, decimal_to_binary
+
 
 class HMM:
 
@@ -13,11 +15,12 @@ class HMM:
 
         self.is_bit_vector = True
 
+        self.dict_order = {}
 
     def guess_user_values(self, user_perturbed_report):
         obs_sequence_list = []
         for perturbed_report in (user_perturbed_report):
-            obs_sequence_list.append(perturbed_report)
+            obs_sequence_list.append(self.dict_order[decimal_to_binary(perturbed_report, self.k)])
         obs_sequence = np.array([obs_sequence_list]).T
 
         _, state_sequence = self.model.decode(obs_sequence)
@@ -118,21 +121,71 @@ class HMM:
         keep_bit_prob = ((rappor.p ** 2) + (rappor.q ** 2)) if rappor.is_memoized else rappor.p
         flip_bit_prob = (2 * rappor.p * rappor.q) if rappor.is_memoized else rappor.q
 
+        order = 0
         emission_prob_list = list()
         for row_index in range(len(column_value_list)):
             row = column_value_list[row_index]
             row_prob_list = list()
             for column_index in range(len(row_value_list)):
                 column = row_value_list[column_index]
-                prob = 1
+                p_counter = 0
+                q_counter = 0
                 for char_index in range(len(row)):
                     if row[char_index] == column[char_index]:
-                        prob *= keep_bit_prob
+                        p_counter += 1
                     else:
-                        prob *= flip_bit_prob
-                row_prob_list.append(prob)
+                        q_counter += 1
+
+                row_prob_list.append((order, p_counter, q_counter))
+                order += 1
             emission_prob_list.append(row_prob_list)
 
+        order = -1
+        dict_order = {}
+        temp_dict_order = {}
+
+        for column_index in range(len(emission_prob_list[0])):
+            q_counter = 0
+            for row_index in range(len(emission_prob_list)):
+                element = emission_prob_list[row_index][column_index]
+                q_counter += element[2]
+
+            if q_counter <= (self.k // 4) * self.k:
+                order += 1
+                temp_dict_order[row_value_list[column_index]] = order
+                dict_order[row_value_list[column_index]] = order
+            else:
+                dict_order[row_value_list[column_index]] = order
+
+        emission_prob_list = list()
+        for row_index in range(len(column_value_list)):
+            row = column_value_list[row_index]
+            row_prob_list = list()
+            for column in temp_dict_order:
+                prob = 1
+                if dict_order[column] == 0:
+                    row_prob_list.append(0)
+                else:
+                    for char_index in range(len(row)):
+                        if row[char_index] == column[char_index]:
+                            prob *= keep_bit_prob
+                        else:
+                            prob *= flip_bit_prob
+                    row_prob_list.append(prob)
+            emission_prob_list.append(row_prob_list)
+
+        # Normalzie emission_prob_list
+        for row_index in range(len(emission_prob_list)):
+            row = emission_prob_list[row_index]
+            sum_row = sum(row)
+            for column_index in range(len(row)):
+                emission_prob_list[row_index][column_index] = emission_prob_list[row_index][column_index] / sum_row
+
+        print('dict order: ', len(dict_order))
+        print('dict order values', max(dict_order.values()))
+        print('temp dict order', len(temp_dict_order))
+
+        self.dict_order = dict_order
         self.model.emissionprob_ = np.array(emission_prob_list)
 
     def create_rappor_eff(self, rappor, user_value_list):
@@ -169,8 +222,6 @@ class HMM:
             emission_prob_list.append(row_prob_list)
 
         self.model.emissionprob_ = np.array(emission_prob_list)
-
-
 
     def create_oue_emission_matrix(self, oue, seed):
         row_value_list = create_emission_matrix_rows(self.k)
@@ -225,4 +276,3 @@ class HMM:
         emission_function = f"create_{protocol.name}_emission_matrix"
         self.config_advance_model(users_trajectory_list)
         getattr(self, emission_function)(protocol, seed)
-

@@ -17,7 +17,7 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-user_trajectory_list = read_dataset('../../dataset/taxi/taxi_grid_2.dat')
+user_trajectory_list = read_dataset('../../dataset/taxi/taxi_grid.dat')
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
@@ -27,10 +27,11 @@ for epsilon in epsilon_list:
     #probability_of_guess_grr.append(guess_advance_user_trajectory(grr, grr_model, user_trajectory_list, 0))
     #print("GRR is Ready")
 
-    rappor = RAPPOR(k, 3)
-    rappor_model = HMM(k, 3)
+    rappor = RAPPOR(k, epsilon)
+    rappor_model = HMM(k, epsilon)
     probability_of_guess_rappor.append(guess_plain_user_trajectory(rappor, rappor_model, user_trajectory_list))
     print("RAPPOR is Ready")
+    print(probability_of_guess_rappor)
 
     #oue = OUE(k, epsilon)
     #oue_model = HMM(k, epsilon)
