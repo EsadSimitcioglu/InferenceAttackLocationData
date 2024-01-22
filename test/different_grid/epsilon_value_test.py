@@ -4,7 +4,7 @@ from LDP.protocols.GRR import GRR
 from LDP.protocols.OLH import OLH
 from LDP.protocols.OUE import OUE
 from LDP.protocols.RAPPOR import RAPPOR
-from experiment.attack.transit.guess_trajectory import guess_advance_user_trajectory, guess_advance_user_trajectory_olh, deneme
+from experiment.attack.transit.guess_trajectory import guess_plain_user_trajectory
 from dataset.helper import read_dataset
 from hidden_markov_model.HMM import HMM
 
@@ -29,7 +29,7 @@ for epsilon in epsilon_list:
 
     rappor = RAPPOR(k, 3)
     rappor_model = HMM(k, 3)
-    probability_of_guess_rappor.append(deneme(rappor, rappor_model, user_trajectory_list))
+    probability_of_guess_rappor.append(guess_plain_user_trajectory(rappor, rappor_model, user_trajectory_list))
     print("RAPPOR is Ready")
 
     #oue = OUE(k, epsilon)
