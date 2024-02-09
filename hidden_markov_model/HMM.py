@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import numpy as np
 import xxhash
 from hmmlearn import hmm
@@ -141,8 +143,9 @@ class HMM:
             emission_prob_list.append(row_prob_list)
 
         order = -1
-        dict_order = {}
-        temp_dict_order = {}
+        revised_column_dict_order = defaultdict(lambda: -1)
+        q_counter_dict = defaultdict(lambda: 0)
+        q_counter_to_value_dict = defaultdict(lambda: -1)
 
         for column_index in range(len(emission_prob_list[0])):
             q_counter = 0
@@ -152,26 +155,26 @@ class HMM:
 
             if q_counter <= (self.k // 4) * self.k:
                 order += 1
-                temp_dict_order[row_value_list[column_index]] = order
-                dict_order[row_value_list[column_index]] = order
+                revised_column_dict_order[row_value_list[column_index]] = order
             else:
-                dict_order[row_value_list[column_index]] = order
+                if q_counter not in q_counter_dict:
+                    order += 1
+                    q_counter_dict[q_counter] = order
+                    revised_column_dict_order[row_value_list[column_index]] = order
+            q_counter_to_value_dict[row_value_list[column_index]] = order
 
         emission_prob_list = list()
         for row_index in range(len(column_value_list)):
             row = column_value_list[row_index]
             row_prob_list = list()
-            for column in temp_dict_order:
+            for column in revised_column_dict_order:
                 prob = 1
-                if dict_order[column] == 0:
-                    row_prob_list.append(0)
-                else:
-                    for char_index in range(len(row)):
-                        if row[char_index] == column[char_index]:
-                            prob *= keep_bit_prob
-                        else:
-                            prob *= flip_bit_prob
-                    row_prob_list.append(prob)
+                for char_index in range(len(row)):
+                    if row[char_index] == column[char_index]:
+                        prob *= keep_bit_prob
+                    else:
+                        prob *= flip_bit_prob
+                row_prob_list.append(prob)
             emission_prob_list.append(row_prob_list)
 
         # Normalzie emission_prob_list
@@ -181,32 +184,61 @@ class HMM:
             for column_index in range(len(row)):
                 emission_prob_list[row_index][column_index] = emission_prob_list[row_index][column_index] / sum_row
 
-        print('dict order: ', len(dict_order))
-        print('dict order values', max(dict_order.values()))
-        print('temp dict order', len(temp_dict_order))
-
-        self.dict_order = dict_order
+        self.dict_order = q_counter_to_value_dict
         self.model.emissionprob_ = np.array(emission_prob_list)
 
-    def create_rappor_eff(self, rappor, user_value_list):
-        self.model = hmm.MultinomialHMM(n_components=self.k, algorithm='viterbi')
-        self.config_plain_model()
-
-        row_value_list = list()
-        for user_val in user_value_list:
-            row_value_list.append((bin(user_val)[2:].zfill(rappor.k)))
-
+    def create_oue_emission_matrix(self, oue, seed):
+        row_value_list = create_emission_matrix_rows(self.k)
         column_value_list = create_emission_matrix_column(self.k)
 
-        keep_bit_prob = ((rappor.p ** 2) + (rappor.q ** 2)) if rappor.is_memoized else rappor.p
-        flip_bit_prob = (2 * rappor.p * rappor.q) if rappor.is_memoized else rappor.q
+        keep_bit_prob = oue.p
+        flip_bit_prob = oue.q
 
+        order = 0
         emission_prob_list = list()
         for row_index in range(len(column_value_list)):
             row = column_value_list[row_index]
             row_prob_list = list()
             for column_index in range(len(row_value_list)):
                 column = row_value_list[column_index]
+                p_counter = 0
+                q_counter = 0
+                for char_index in range(len(row)):
+                    if row[char_index] == column[char_index]:
+                        p_counter += 1
+                    else:
+                        q_counter += 1
+
+                row_prob_list.append((order, p_counter, q_counter))
+                order += 1
+            emission_prob_list.append(row_prob_list)
+
+        order = -1
+        revised_column_dict_order = defaultdict(lambda: -1)
+        q_counter_dict = defaultdict(lambda: 0)
+        q_counter_to_value_dict = defaultdict(lambda: -1)
+
+        for column_index in range(len(emission_prob_list[0])):
+            q_counter = 0
+            for row_index in range(len(emission_prob_list)):
+                element = emission_prob_list[row_index][column_index]
+                q_counter += element[2]
+
+            if q_counter <= (self.k // 4) * self.k:
+                order += 1
+                revised_column_dict_order[row_value_list[column_index]] = order
+            else:
+                if q_counter not in q_counter_dict:
+                    order += 1
+                    q_counter_dict[q_counter] = order
+                    revised_column_dict_order[row_value_list[column_index]] = order
+            q_counter_to_value_dict[row_value_list[column_index]] = order
+
+        emission_prob_list = list()
+        for row_index in range(len(column_value_list)):
+            row = column_value_list[row_index]
+            row_prob_list = list()
+            for column in revised_column_dict_order:
                 prob = 1
                 for char_index in range(len(row)):
                     if row[char_index] == column[char_index]:
@@ -214,41 +246,16 @@ class HMM:
                     else:
                         prob *= flip_bit_prob
                 row_prob_list.append(prob)
-
-            # Normalize row_prob_list
-            sum_prob = sum(row_prob_list)
-            for i in range(len(row_prob_list)):
-                row_prob_list[i] /= sum_prob
             emission_prob_list.append(row_prob_list)
 
-        self.model.emissionprob_ = np.array(emission_prob_list)
+        # Normalzie emission_prob_list
+        for row_index in range(len(emission_prob_list)):
+            row = emission_prob_list[row_index]
+            sum_row = sum(row)
+            for column_index in range(len(row)):
+                emission_prob_list[row_index][column_index] = emission_prob_list[row_index][column_index] / sum_row
 
-    def create_oue_emission_matrix(self, oue, seed):
-        row_value_list = create_emission_matrix_rows(self.k)
-
-        column_value_list = create_emission_matrix_column(self.k)
-
-        emission_prob_list = list()
-        for row_index in range(len(column_value_list)):
-            row = column_value_list[row_index]
-            row_prob_list = list()
-            for column_index in range(len(row_value_list)):
-                column = row_value_list[column_index]
-                prob = 1
-                for char_index in range(len(row)):
-                    if row[char_index] == '1':
-                        if row[char_index] == column[char_index]:
-                            prob *= oue.p
-                        else:
-                            prob *= (1 - oue.p)
-                    else:
-                        if row[char_index] == column[char_index]:
-                            prob *= (1 - oue.q)
-                        else:
-                            prob *= oue.q
-                row_prob_list.append(prob)
-            emission_prob_list.append(row_prob_list)
-
+        self.dict_order = q_counter_to_value_dict
         self.model.emissionprob_ = np.array(emission_prob_list)
 
     def create_olh_emission_matrix(self, olh, seed):
