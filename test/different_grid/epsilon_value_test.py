@@ -7,6 +7,7 @@ from LDP.protocols.RAPPOR import RAPPOR
 from experiment.attack.transit.guess_trajectory import guess_plain_user_trajectory
 from dataset.helper import read_dataset
 from hidden_markov_model.HMM import HMM
+import time
 
 k = 20
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
@@ -18,6 +19,8 @@ probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
 user_trajectory_list = read_dataset('../../dataset/taxi/taxi_grid.dat')
+
+start_time = time.time()
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
@@ -35,7 +38,7 @@ for epsilon in epsilon_list:
 
     #oue = OUE(k, epsilon)
     #oue_model = HMM(k, epsilon)
-    #probability_of_guess_oue.append(guess_advance_user_trajectory(oue, oue_model, user_trajectory_list, 0))
+    #probability_of_guess_oue.append(guess_plain_user_trajectory(oue, oue_model, user_trajectory_list))
     #print("OUE is Ready")
 
     #olh = OLH(k, epsilon)
@@ -43,10 +46,11 @@ for epsilon in epsilon_list:
     #probability_of_guess_olh.append(guess_advance_user_trajectory_olh(olh, olh_model, user_trajectory_list, 0))
     #print("OLH is Ready")
 
-
+elapsed_time = time.time() - start_time
+print("Elapsed Time: " + str(elapsed_time))
 #print("GRR: " + str(probability_of_guess_grr))
 print("RAPPOR: " + str(probability_of_guess_rappor))
-#print("OUE: " + str(probability_of_guess_oue))
+print("OUE: " + str(probability_of_guess_oue))
 #print("OLH: " + str(probability_of_guess_olh))
 
 plt.rcParams.update({'font.size': 12})
@@ -60,7 +64,7 @@ plt.plot(epsilon_list, probability_of_guess_rappor, linewidth=2, color='grey', m
 #plt.plot(epsilon_list, probability_of_guess_olh, linewidth=2, color='yellow', marker='x', markersize=10, mew=1.5,
          #fillstyle='none', clip_on=False, label="OLH")
 plt.xticks(fontsize=15)
-plt.ylim(0, 1)
+#plt.ylim(0, 1)
 plt.ylabel("Ratio Of Guess")
 plt.xlabel('Epsilon Values')
 plt.grid(linestyle=':')

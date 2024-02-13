@@ -1,6 +1,10 @@
 import csv
+from collections import defaultdict
 
 import numpy as np
+import xxhash
+
+from hidden_markov_model.helper import decimal_to_binary
 
 
 def create_emission_matrix_rows(k):
@@ -31,36 +35,39 @@ def binary_to_decimal(binary_number):
         index_counter -= 1
     return decimal_number
 
-
+seed = 1
 k = 20
-epsilon = 0.5
+epsilon = 3
 p = (np.exp(epsilon / 2)) / (np.exp(epsilon / 2) + 1)
 q = 1 / (np.exp(epsilon / 2) + 1)
-row_value_list = create_emission_matrix_rows(k)
-column_value_list = create_emission_matrix_column(k)
+g = int(round(np.exp(epsilon))) + 1
+print(g)
+row_value_list = create_emission_matrix_rows(g)
 
 order = 0
 emission_prob_list = list()
-for row_index in range(len(column_value_list)):
-    row = column_value_list[row_index]
+for row in range(k):
+    hash_value_of_hidden_state = (xxhash.xxh32(str(row), seed=seed).intdigest() % g)
+    bit_vector_of_hidden_state = decimal_to_binary(hash_value_of_hidden_state, g)
     row_prob_list = list()
     for column_index in range(len(row_value_list)):
         column = row_value_list[column_index]
-        prob = ""
         p_counter = 0
         q_counter = 0
-        for char_index in range(len(row)):
-            if row[char_index] == column[char_index]:
+        for char_index in range(g):
+            if bit_vector_of_hidden_state[char_index] == column[char_index]:
                 p_counter += 1
             else:
                 q_counter += 1
+
         row_prob_list.append((order, p_counter, q_counter))
-        order+=1
+        order += 1
     emission_prob_list.append(row_prob_list)
 
 order = -1
-dict_order = {}
-temp_dict_order = {}
+revised_column_dict_order = defaultdict(lambda: -1)
+q_counter_dict = defaultdict(lambda: 0)
+q_counter_to_value_dict = defaultdict(lambda: -1)
 
 for column_index in range(len(emission_prob_list[0])):
     q_counter = 0
@@ -68,59 +75,30 @@ for column_index in range(len(emission_prob_list[0])):
         element = emission_prob_list[row_index][column_index]
         q_counter += element[2]
 
-    if q_counter <= (k//4)*k:
-        order+=1
-        temp_dict_order[row_value_list[column_index]] = order
-        dict_order[row_value_list[column_index]] = order
+    if q_counter <= (g // 4) * g:
+        order += 1
+        revised_column_dict_order[row_value_list[column_index]] = order
     else:
-        dict_order[row_value_list[column_index]] = order
+        if q_counter not in q_counter_dict:
+            order += 1
+            q_counter_dict[q_counter] = order
+            revised_column_dict_order[row_value_list[column_index]] = order
+    q_counter_to_value_dict[row_value_list[column_index]] = order
 
 emission_prob_list = list()
-for row_index in range(len(column_value_list)):
-    row = column_value_list[row_index]
+for row in range(k):
+    hash_value_of_hidden_state = (xxhash.xxh32(str(row), seed=seed).intdigest() % g)
+    bit_vector_of_hidden_state = decimal_to_binary(hash_value_of_hidden_state, g)
     row_prob_list = list()
-    for column in temp_dict_order:
+    for column in revised_column_dict_order:
         prob = 1
-        for char_index in range(len(row)):
-            if row[char_index] == column[char_index]:
+        for char_index in range(g):
+            if bit_vector_of_hidden_state[char_index] == column[char_index]:
                 prob *= p
             else:
                 prob *= q
         row_prob_list.append(prob)
     emission_prob_list.append(row_prob_list)
-
-# Initialize an empty dictionary to store grouped keys
-grouped_dict = {}
-
-# Iterate through the original dictionary
-for key, value in dict_order.items():
-    # Check if the value is already a key in the grouped_dict
-    if value in grouped_dict:
-        grouped_dict[value].append(key)
-    else:
-        # If not, create a new list with the current key as the first element
-        grouped_dict[value] = [key]
-
-for key in grouped_dict:
-        # Remove the first element from the list
-        first_element = grouped_dict[key][0]
-        grouped_dict[key].remove(first_element)
-
-        for row_index in range(len(column_value_list)):
-            row = column_value_list[row_index]
-            row_prob_list = list()
-            for column in grouped_dict[key]:
-                prob = 1
-                for char_index in range(len(row)):
-                    if row[char_index] == column[char_index]:
-                        prob *= p
-                    else:
-                        prob *= q
-                emission_prob_list[row_index][key] += prob
-
-
-
-"""
 
 # Normalzie emission_prob_list
 for row_index in range(len(emission_prob_list)):
@@ -128,10 +106,8 @@ for row_index in range(len(emission_prob_list)):
     sum_row = sum(row)
     for column_index in range(len(row)):
         emission_prob_list[row_index][column_index] = emission_prob_list[row_index][column_index] / sum_row
-        
-"""
-print('dict order: ' , len(dict_order))
-print('dict order values' , max(dict_order.values()))
-print('temp dict order', len(temp_dict_order))
 
+a = sum(emission_prob_list[0])
+print('q_counter_to_value_dict', len(q_counter_to_value_dict))
+print('revised_column_dict_order', len(revised_column_dict_order))
 

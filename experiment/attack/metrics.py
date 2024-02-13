@@ -121,10 +121,11 @@ def prediction_accuracy(guess_list, true_list):
     prob_sum = 0
     index_counter = 0
 
-    for guess_value, true_value in zip(guess_list, true_list):
-        if guess_value == true_value:
-            prob_sum += 1
-        index_counter += 1
+    for guess_trajectory, true_trajectory in zip(guess_list, true_list):
+        for guess_value, true_value in zip(guess_trajectory, true_trajectory):
+            if guess_value == true_value:
+                prob_sum += 1
+            index_counter += 1
 
     return prob_sum / index_counter
 

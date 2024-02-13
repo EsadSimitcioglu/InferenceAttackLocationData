@@ -7,6 +7,7 @@ from LDP.protocols.RAPPOR import RAPPOR
 class HBV:
 
     def __init__(self, k, epsilon):
+        self.name = 'hbv'
         self.k = k
         self.epsilon = epsilon
         self.p = (np.exp(epsilon / 2)) / (np.exp(epsilon / 2) + 1)
@@ -17,7 +18,6 @@ class HBV:
         rappor = RAPPOR(self.g, self.epsilon)
         report_list = list()
         for input_data in input_data_list:
-            input_data -= 1
             report_value = (xxhash.xxh32(str(input_data), seed=seed).intdigest() % self.g)
             bit_vector = rappor.client(report_value)
             report_list.append(bit_vector)
