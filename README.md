@@ -18,8 +18,8 @@
 
 | Transit Experiment | Estimation Percentage Metric | Path Metric   |
 | ------------------ | ---------------------------- | ------------- |
-| Plain Attack       | :white_check_mark:           | :white_check_mark:  |
-| Chain Attack       | :white_check_mark:           | :x:             |
+| Plain Attack       | :white_check_mark:           | :white_check_mark:            |
+| Chain Attack       | :white_check_mark:           | :white_check_mark:           |
 | Inference Attack   | :white_check_mark:           | :white_check_mark:            |
 
 ### Dataset 
