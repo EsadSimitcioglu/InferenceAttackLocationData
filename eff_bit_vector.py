@@ -37,7 +37,7 @@ def binary_to_decimal(binary_number):
 
 seed = 1
 k = 20
-epsilon = 3
+epsilon =0.5
 p = (np.exp(epsilon / 2)) / (np.exp(epsilon / 2) + 1)
 q = 1 / (np.exp(epsilon / 2) + 1)
 g = int(round(np.exp(epsilon))) + 1

@@ -18,7 +18,7 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-user_trajectory_list = read_dataset('../../dataset/taxi/taxi_grid.dat')
+user_trajectory_list = read_dataset('../../dataset/brinkhoff/brinkhoff_grid.dat')
 
 start_time = time.time()
 
@@ -32,14 +32,15 @@ for epsilon in epsilon_list:
 
     rappor = RAPPOR(k, epsilon)
     rappor_model = HMM(k, epsilon)
-    probability_of_guess_rappor.append(guess_plain_user_trajectory(rappor, rappor_model, user_trajectory_list))
+    probability_of_guess_rappor.append(guess_plain_user_trajectory(rappor, rappor_model, user_trajectory_list, 'NDE', 'brinkhoff'))
     print("RAPPOR is Ready")
-    print(probability_of_guess_rappor)
+    print("RAPPOR: " + str(probability_of_guess_rappor))
 
-    #oue = OUE(k, epsilon)
-    #oue_model = HMM(k, epsilon)
-    #probability_of_guess_oue.append(guess_plain_user_trajectory(oue, oue_model, user_trajectory_list))
-    #print("OUE is Ready")
+    oue = OUE(k, epsilon)
+    oue_model = HMM(k, epsilon)
+    probability_of_guess_oue.append(guess_plain_user_trajectory(oue, oue_model, user_trajectory_list, 'NDE', 'brinkhoff'))
+    print("OUE is Ready")
+    print("OUE: " + str(probability_of_guess_oue))
 
     #olh = OLH(k, epsilon)
     #olh_model = HMM(k, epsilon)
@@ -59,13 +60,14 @@ plt.figure(figsize=(4 * 1.33, 4 * 1.33))
          #fillstyle='none', clip_on=False, label="GRR")
 plt.plot(epsilon_list, probability_of_guess_rappor, linewidth=2, color='grey', marker='s', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="RAPPOR")
-#plt.plot(epsilon_list, probability_of_guess_oue, linewidth=2, color='blue', marker='x', markersize=10, mew=1.5,
-         #fillstyle='none', clip_on=False, label="OUE")
+plt.plot(epsilon_list, probability_of_guess_oue, linewidth=2, color='blue', marker='x', markersize=10, mew=1.5,
+         fillstyle='none', clip_on=False, label="OUE")
 #plt.plot(epsilon_list, probability_of_guess_olh, linewidth=2, color='yellow', marker='x', markersize=10, mew=1.5,
          #fillstyle='none', clip_on=False, label="OLH")
 plt.xticks(fontsize=15)
+plt.title("BRINKHOFF Dataset")
 #plt.ylim(0, 1)
-plt.ylabel("Ratio Of Guess")
+plt.ylabel("NDE")
 plt.xlabel('Epsilon Values')
 plt.grid(linestyle=':')
 plt.legend(prop={'size': 12}, ncol=2, columnspacing=0.75)

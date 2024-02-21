@@ -117,7 +117,7 @@ def normalized_distance_error(dataset_name, true_list, guess_list):
     return average_km
 
 
-def prediction_accuracy(guess_list, true_list):
+def prediction_accuracy(true_list, guess_list):
     prob_sum = 0
     index_counter = 0
 

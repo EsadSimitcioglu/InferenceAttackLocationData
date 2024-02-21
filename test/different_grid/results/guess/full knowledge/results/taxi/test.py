@@ -112,7 +112,7 @@ def create_grid():
 def path_metric():
     users_grid_gt_list = []
 
-    with open('../../../../../../../dataset/taxi/taxi_grid.dat') as f:
+    with open('../../../../../../../../test/taxi_grid.dat') as f:
         reader = csv.reader(f, delimiter="\t")
         for line in reader:
             grid_list = line[0].split(" ")

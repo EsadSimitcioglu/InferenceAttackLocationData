@@ -17,8 +17,11 @@ class OUE:
 
 
     def client(self, input_data):
-        bit_vector = np.zeros(self.k)
-        bit_vector[input_data - 1] = 1
+        if not isinstance(input_data, list) and not isinstance(input_data, np.ndarray):
+            bit_vector = np.zeros(self.k)
+            bit_vector[input_data - 1] = 1
+        else:
+            bit_vector = np.array(input_data)
 
         perturbed_bit_vector = bit_vector.copy()
         for bit_index in range(self.k):
@@ -52,3 +55,23 @@ class OUE:
             report_string += str(int(index))
         report = (binary_to_decimal(report_string))
         return report
+
+    def memoized(self, input_list):
+        perturbed_list = []
+
+        for user_trajectory in input_list:
+            user_list = list()
+            memoization_dict = {}
+            prev_value = -1
+            for input_data in user_trajectory:
+                if input_data != prev_value:
+                    fake_input_value = self.client(input_data)
+                    memoization_dict[input_data] = fake_input_value
+                    user_list.append(self.client(fake_input_value))
+                else:
+                    user_list.append(self.client(memoization_dict[input_data]))
+                prev_value = input_data
+            report = [self.convert_binary_report_to_decimal(report_string) for report_string in user_list]
+            perturbed_list.append(report)
+
+        return perturbed_list

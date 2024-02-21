@@ -40,3 +40,18 @@ class OLH:
         norm_est_freq = np.nan_to_num(est_freq / sum(est_freq))
 
         return norm_est_freq
+
+    def memoized(self, input_list, seed):
+        user_list = list()
+        memoization_dict = dict()
+        prev_value = -1
+        for input_data in input_list:
+            if input_data != prev_value:
+                fake_input_value = self.client(input_data, seed)
+                memoization_dict[input_data] = fake_input_value -1
+                user_list.append(self.client(fake_input_value, seed))
+            else:
+                user_list.append(self.client(memoization_dict[input_data], seed))
+            prev_value = input_data
+
+        return user_list
