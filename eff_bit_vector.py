@@ -41,20 +41,18 @@ epsilon =0.5
 p = (np.exp(epsilon / 2)) / (np.exp(epsilon / 2) + 1)
 q = 1 / (np.exp(epsilon / 2) + 1)
 g = int(round(np.exp(epsilon))) + 1
-print(g)
-row_value_list = create_emission_matrix_rows(g)
+row_value_list = create_emission_matrix_rows(k)
 
 order = 0
 emission_prob_list = list()
 for row in range(k):
-    hash_value_of_hidden_state = (xxhash.xxh32(str(row), seed=seed).intdigest() % g)
-    bit_vector_of_hidden_state = decimal_to_binary(hash_value_of_hidden_state, g)
+    bit_vector_of_hidden_state = decimal_to_binary(row, k)
     row_prob_list = list()
     for column_index in range(len(row_value_list)):
         column = row_value_list[column_index]
         p_counter = 0
         q_counter = 0
-        for char_index in range(g):
+        for char_index in range(k):
             if bit_vector_of_hidden_state[char_index] == column[char_index]:
                 p_counter += 1
             else:
@@ -75,7 +73,7 @@ for column_index in range(len(emission_prob_list[0])):
         element = emission_prob_list[row_index][column_index]
         q_counter += element[2]
 
-    if q_counter <= (g // 4) * g:
+    if q_counter <= (k // 4) * k:
         order += 1
         revised_column_dict_order[row_value_list[column_index]] = order
     else:
@@ -87,12 +85,11 @@ for column_index in range(len(emission_prob_list[0])):
 
 emission_prob_list = list()
 for row in range(k):
-    hash_value_of_hidden_state = (xxhash.xxh32(str(row), seed=seed).intdigest() % g)
-    bit_vector_of_hidden_state = decimal_to_binary(hash_value_of_hidden_state, g)
+    bit_vector_of_hidden_state = decimal_to_binary(row, k)
     row_prob_list = list()
     for column in revised_column_dict_order:
         prob = 1
-        for char_index in range(g):
+        for char_index in range(k):
             if bit_vector_of_hidden_state[char_index] == column[char_index]:
                 prob *= p
             else:

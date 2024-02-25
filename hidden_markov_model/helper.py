@@ -198,3 +198,53 @@ def create_rappor_emission_matrix(self, rappor, seed):
 
     self.dict_order = q_counter_to_value_dict
     self.model.emissionprob_ = np.array(emission_prob_list)
+
+
+def calculate_prob(k, p, q, q_counter):
+    prob = 1
+    for i in range(q_counter):
+        prob *= q
+    for i in range(k - q_counter):
+        prob *= p
+    return prob
+
+
+def find_bit_vector_with_q_counter(bit_vector, k, q_counter):
+    res_bit_vector = ''
+    for i in range(k):
+        if q_counter > 0:
+            res_bit_vector += bit_vector[i]
+            q_counter -= 1
+        else:
+            if bit_vector[i] == '0':
+                res_bit_vector += '1'
+            else:
+                res_bit_vector += '0'
+    return res_bit_vector
+
+
+def calculate_q_counter(k, report):
+    bit_vector = decimal_to_binary(report, k)
+    hidden_state_list = create_emission_matrix_column(k)
+    q_counter = 0
+    for hidden_state in hidden_state_list:
+        for j in range(k):
+            if bit_vector[j] != hidden_state[j]:
+                q_counter += 1
+    return q_counter // k
+
+
+def find_closest_hidden_state(k, report):
+    bit_vector = decimal_to_binary(report, k)
+    hidden_state_list = create_emission_matrix_column(k)
+    min_q_counter = float('inf')
+    closest_hidden_state = ''
+    for hidden_state in hidden_state_list:
+        q_counter = 0
+        for j in range(k):
+            if bit_vector[j] != hidden_state[j]:
+                q_counter += 1
+        if q_counter < min_q_counter:
+            min_q_counter = q_counter
+            closest_hidden_state = hidden_state
+    return closest_hidden_state

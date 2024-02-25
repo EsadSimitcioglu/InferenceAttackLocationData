@@ -4,7 +4,8 @@ import numpy as np
 import xxhash
 from hmmlearn import hmm
 from hidden_markov_model.helper import getAdjacent, analyze_taken_path, create_emission_matrix_rows, \
-    create_emission_matrix_column, decimal_to_binary
+    create_emission_matrix_column, decimal_to_binary, calculate_prob, calculate_q_counter, find_closest_hidden_state, \
+    find_bit_vector_with_q_counter
 
 
 class HMM:
@@ -22,9 +23,14 @@ class HMM:
     def guess_user_values(self, protocol, user_perturbed_report):
         obs_sequence_list = []
         for perturbed_report in user_perturbed_report:
-
             if protocol.is_bit_vector:
-                obs_sequence_list.append(self.dict_order[decimal_to_binary(perturbed_report, self.k)])
+                #q_counter = calculate_q_counter(self.k, perturbed_report)
+                #if q_counter in self.dict_order:
+                    #obs_sequence_list.append(self.dict_order[q_counter])
+                if decimal_to_binary(perturbed_report, self.k) in self.dict_order:
+                    obs_sequence_list.append(self.dict_order[decimal_to_binary(perturbed_report, self.k)])
+                else:
+                    obs_sequence_list.append(self.dict_order[find_closest_hidden_state(self.k, perturbed_report)])
             else:
                 obs_sequence_list.append(perturbed_report)
         obs_sequence = np.array([obs_sequence_list]).T
@@ -120,66 +126,40 @@ class HMM:
         self.model.emissionprob_ = np.array(matrix_list)
 
     def create_rappor_emission_matrix(self, rappor, seed):
-        row_value_list = create_emission_matrix_rows(self.k)
-
-        column_value_list = create_emission_matrix_column(self.k)
-
-        keep_bit_prob = ((rappor.p ** 2) + (rappor.q ** 2)) if rappor.is_memoized else rappor.p
-        flip_bit_prob = (2 * rappor.p * rappor.q) if rappor.is_memoized else rappor.q
+        emission_prob_list = list()
+        dict_order = defaultdict(int)
+        hidden_state_list = create_emission_matrix_column(self.k)
 
         order = 0
-        emission_prob_list = list()
-        for row_index in range(len(column_value_list)):
-            row = column_value_list[row_index]
+
+        for row in hidden_state_list:
             row_prob_list = list()
-            for column_index in range(len(row_value_list)):
-                column = row_value_list[column_index]
-                p_counter = 0
-                q_counter = 0
-                for char_index in range(len(row)):
-                    if row[char_index] == column[char_index]:
-                        p_counter += 1
-                    else:
-                        q_counter += 1
-
-                row_prob_list.append((order, p_counter, q_counter))
-                order += 1
-            emission_prob_list.append(row_prob_list)
-
-        order = -1
-        revised_column_dict_order = defaultdict(lambda: -1)
-        q_counter_dict = defaultdict(lambda: 0)
-        q_counter_to_value_dict = defaultdict(lambda: -1)
-
-        for column_index in range(len(emission_prob_list[0])):
-            q_counter = 0
-            for row_index in range(len(emission_prob_list)):
-                element = emission_prob_list[row_index][column_index]
-                q_counter += element[2]
-
-            if q_counter <= (self.k // 4) * self.k:
-                order += 1
-                revised_column_dict_order[row_value_list[column_index]] = order
-            else:
-                if q_counter not in q_counter_dict:
-                    order += 1
-                    q_counter_dict[q_counter] = order
-                    revised_column_dict_order[row_value_list[column_index]] = order
-            q_counter_to_value_dict[row_value_list[column_index]] = order
-
-        emission_prob_list = list()
-        for row_index in range(len(column_value_list)):
-            row = column_value_list[row_index]
-            row_prob_list = list()
-            for column in revised_column_dict_order:
+            for column in hidden_state_list:
                 prob = 1
-                for char_index in range(len(row)):
+                for char_index in range(self.k):
                     if row[char_index] == column[char_index]:
-                        prob *= keep_bit_prob
+                        prob *= rappor.p
                     else:
-                        prob *= flip_bit_prob
+                        prob *= rappor.q
                 row_prob_list.append(prob)
+            dict_order[row] = order
+            order += 1
             emission_prob_list.append(row_prob_list)
+
+        for q_counter in range(self.k // 4, self.k):
+            for hidden_state in hidden_state_list:
+                observe_state = find_bit_vector_with_q_counter(hidden_state, self.k, q_counter)
+
+                for index, row in enumerate(hidden_state_list):
+                    prob = 1
+                    for char_index in range(self.k):
+                        if row[char_index] == observe_state[char_index]:
+                            prob *= rappor.p
+                        else:
+                            prob *= rappor.q
+                    emission_prob_list[index].append(prob)
+                dict_order[observe_state] = order
+                order += 1
 
         # Normalzie emission_prob_list
         for row_index in range(len(emission_prob_list)):
@@ -188,7 +168,7 @@ class HMM:
             for column_index in range(len(row)):
                 emission_prob_list[row_index][column_index] = emission_prob_list[row_index][column_index] / sum_row
 
-        self.dict_order = q_counter_to_value_dict
+        self.dict_order = dict_order
         self.model.emissionprob_ = np.array(emission_prob_list)
 
     def create_oue_emission_matrix(self, oue, seed):

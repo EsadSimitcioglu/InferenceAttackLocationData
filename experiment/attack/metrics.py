@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from shapely import geometry
 from shapely import ops
-import geopy.distance
 
 taxi_coordinates = {
     "max_lat": -8.58,

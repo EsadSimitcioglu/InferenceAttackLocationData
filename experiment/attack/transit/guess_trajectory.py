@@ -32,7 +32,7 @@ def perturb(protocol, user_trajectory_list):
 def guess_plain_user_trajectory(protocol, hmm_model, user_trajectory_list, test_type='PA', dataset_name=None):
     report_list = perturb(protocol, user_trajectory_list)
     hmm_model.create_plain_protocol_model(protocol)
-    guess_list = [hmm_model.guess_user_values(report) for report in report_list]
+    guess_list = [hmm_model.guess_user_values(protocol, report) for report in report_list]
     return experiment_metrics(test_type, user_trajectory_list, guess_list, dataset_name)
 
 def guess_plain_user_trajectory_olh(protocol, hmm_model, user_trajectory_list, test_type='PA', dataset_name=None):
