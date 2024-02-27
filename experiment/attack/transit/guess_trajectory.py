@@ -40,7 +40,7 @@ def guess_plain_user_trajectory_olh(protocol, hmm_model, user_trajectory_list, t
     guess_list = list()
     for user_index, report in enumerate(report_list):
         hmm_model.create_plain_protocol_model(protocol, user_index + 1)
-        guess_list.append(hmm_model.guess_user_values(report))
+        guess_list.append(hmm_model.guess_user_values(protocol, report))
     return experiment_metrics(test_type, user_trajectory_list, guess_list, dataset_name)
 
 

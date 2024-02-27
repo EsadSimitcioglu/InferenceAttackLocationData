@@ -3,9 +3,11 @@ from collections import defaultdict
 import numpy as np
 import xxhash
 from hmmlearn import hmm
+
+from LDP.helper import binary_to_decimal
 from hidden_markov_model.helper import getAdjacent, analyze_taken_path, create_emission_matrix_rows, \
     create_emission_matrix_column, decimal_to_binary, calculate_prob, calculate_q_counter, find_closest_hidden_state, \
-    find_bit_vector_with_q_counter
+    find_bit_vector_with_q_counter, flip_bits
 
 
 class HMM:
@@ -23,16 +25,15 @@ class HMM:
     def guess_user_values(self, protocol, user_perturbed_report):
         obs_sequence_list = []
         for perturbed_report in user_perturbed_report:
+
             if protocol.is_bit_vector:
-                #q_counter = calculate_q_counter(self.k, perturbed_report)
-                #if q_counter in self.dict_order:
-                    #obs_sequence_list.append(self.dict_order[q_counter])
                 if decimal_to_binary(perturbed_report, self.k) in self.dict_order:
                     obs_sequence_list.append(self.dict_order[decimal_to_binary(perturbed_report, self.k)])
                 else:
-                    obs_sequence_list.append(self.dict_order[find_closest_hidden_state(self.k, perturbed_report)])
+                    obs_sequence_list.append(0)
             else:
                 obs_sequence_list.append(perturbed_report)
+
         obs_sequence = np.array([obs_sequence_list]).T
 
         _, state_sequence = self.model.decode(obs_sequence)
@@ -126,40 +127,47 @@ class HMM:
         self.model.emissionprob_ = np.array(matrix_list)
 
     def create_rappor_emission_matrix(self, rappor, seed):
-        emission_prob_list = list()
-        dict_order = defaultdict(int)
         hidden_state_list = create_emission_matrix_column(self.k)
+        revised_column_dict_order = defaultdict(lambda: -1)
+        q_counter_to_value_dict = defaultdict(lambda: -1)
 
-        order = 0
+        order = -1
+        esad = dict()
+        for hidden_state in hidden_state_list:
+            for q_counter in range(self.k // 4 + 1):
+                binary_number_list = flip_bits(hidden_state, q_counter)
+                for binary_number in binary_number_list:
+                    if binary_number not in esad:
+                        esad[binary_to_decimal(binary_number)] = binary_number
 
-        for row in hidden_state_list:
+        # Sort dictionary by key
+        esad = {k: v for k, v in sorted(esad.items(), key=lambda item: item[0])}
+
+        for key in esad:
+            column = esad[key]
+            q_counter = 0
+            for hidden_state in hidden_state_list:
+                for char_index in range(self.k):
+                    if hidden_state[char_index] != column[char_index]:
+                        q_counter += 1
+            if q_counter <= (self.k // 4) * self.k:
+                order += 1
+                revised_column_dict_order[column] = order
+            q_counter_to_value_dict[column] = order
+
+
+        emission_prob_list = list()
+        for hidden_state in hidden_state_list:
             row_prob_list = list()
-            for column in hidden_state_list:
+            for column in revised_column_dict_order:
                 prob = 1
                 for char_index in range(self.k):
-                    if row[char_index] == column[char_index]:
+                    if hidden_state[char_index] == column[char_index]:
                         prob *= rappor.p
                     else:
                         prob *= rappor.q
                 row_prob_list.append(prob)
-            dict_order[row] = order
-            order += 1
             emission_prob_list.append(row_prob_list)
-
-        for q_counter in range(self.k // 4, self.k):
-            for hidden_state in hidden_state_list:
-                observe_state = find_bit_vector_with_q_counter(hidden_state, self.k, q_counter)
-
-                for index, row in enumerate(hidden_state_list):
-                    prob = 1
-                    for char_index in range(self.k):
-                        if row[char_index] == observe_state[char_index]:
-                            prob *= rappor.p
-                        else:
-                            prob *= rappor.q
-                    emission_prob_list[index].append(prob)
-                dict_order[observe_state] = order
-                order += 1
 
         # Normalzie emission_prob_list
         for row_index in range(len(emission_prob_list)):
@@ -168,67 +176,84 @@ class HMM:
             for column_index in range(len(row)):
                 emission_prob_list[row_index][column_index] = emission_prob_list[row_index][column_index] / sum_row
 
-        self.dict_order = dict_order
+        self.dict_order = q_counter_to_value_dict
         self.model.emissionprob_ = np.array(emission_prob_list)
 
-    def create_oue_emission_matrix(self, oue, seed):
-        row_value_list = create_emission_matrix_rows(self.k)
-        column_value_list = create_emission_matrix_column(self.k)
+    def create_rapporOld_emission_matrix(self, rappor, seed):
+        rappor_report_list = list()
+        for x in range(2 ** self.k):
+            rappor_report_list.append((bin(x)[2:].zfill(self.k)))
 
-        keep_bit_prob = oue.p
-        flip_bit_prob = oue.q
-
-        order = 0
-        emission_prob_list = list()
-        for row_index in range(len(column_value_list)):
-            row = column_value_list[row_index]
-            row_prob_list = list()
-            for column_index in range(len(row_value_list)):
-                column = row_value_list[column_index]
-                p_counter = 0
-                q_counter = 0
-                for char_index in range(len(row)):
-                    if row[char_index] == column[char_index]:
-                        p_counter += 1
-                    else:
-                        q_counter += 1
-
-                row_prob_list.append((order, p_counter, q_counter))
-                order += 1
-            emission_prob_list.append(row_prob_list)
-
-        order = -1
-        revised_column_dict_order = defaultdict(lambda: -1)
-        q_counter_dict = defaultdict(lambda: 0)
-        q_counter_to_value_dict = defaultdict(lambda: -1)
-
-        for column_index in range(len(emission_prob_list[0])):
-            q_counter = 0
-            for row_index in range(len(emission_prob_list)):
-                element = emission_prob_list[row_index][column_index]
-                q_counter += element[2]
-
-            if q_counter <= (self.k // 4) * self.k:
-                order += 1
-                revised_column_dict_order[row_value_list[column_index]] = order
-            else:
-                if q_counter not in q_counter_dict:
-                    order += 1
-                    q_counter_dict[q_counter] = order
-                    revised_column_dict_order[row_value_list[column_index]] = order
-            q_counter_to_value_dict[row_value_list[column_index]] = order
+        user_value_list = list()
+        for i in range(self.k):
+            bit_vector = ''
+            for j in range(self.k):
+                if i == j:
+                    bit_vector += '1'
+                else:
+                    bit_vector += '0'
+            user_value_list.append(bit_vector)
 
         emission_prob_list = list()
-        for row_index in range(len(column_value_list)):
-            row = column_value_list[row_index]
+        p_counter = 0
+        q_counter = 0
+        for row_index in range(len(user_value_list)):
+            row = user_value_list[row_index]
             row_prob_list = list()
-            for column in revised_column_dict_order:
+            for column_index in range(len(rappor_report_list)):
+                column = rappor_report_list[column_index]
                 prob = 1
                 for char_index in range(len(row)):
                     if row[char_index] == column[char_index]:
-                        prob *= keep_bit_prob
+                        p_counter += 1
+                        prob *= rappor.p
                     else:
-                        prob *= flip_bit_prob
+                        q_counter += 1
+                        prob *= rappor.q
+                row_prob_list.append(prob)
+            emission_prob_list.append(row_prob_list)
+
+        self.model.emissionprob_ = np.array(emission_prob_list)
+
+    def create_oue_emission_matrix(self, oue, seed):
+        hidden_state_list = create_emission_matrix_column(self.k)
+        revised_column_dict_order = defaultdict(lambda: -1)
+        q_counter_to_value_dict = defaultdict(lambda: -1)
+
+        order = -1
+        esad = dict()
+        for hidden_state in hidden_state_list:
+            for q_counter in range(self.k // 4 + 1):
+                binary_number_list = flip_bits(hidden_state, q_counter)
+                for binary_number in binary_number_list:
+                    if binary_number not in esad:
+                        esad[binary_to_decimal(binary_number)] = binary_number
+
+        # Sort dictionary by key
+        esad = {k: v for k, v in sorted(esad.items(), key=lambda item: item[0])}
+
+        for key in esad:
+            column = esad[key]
+            q_counter = 0
+            for hidden_state in hidden_state_list:
+                for char_index in range(self.k):
+                    if hidden_state[char_index] != column[char_index]:
+                        q_counter += 1
+            if q_counter <= (self.k // 4) * self.k:
+                order += 1
+                revised_column_dict_order[column] = order
+            q_counter_to_value_dict[column] = order
+
+        emission_prob_list = list()
+        for hidden_state in hidden_state_list:
+            row_prob_list = list()
+            for column in revised_column_dict_order:
+                prob = 1
+                for char_index in range(self.k):
+                    if hidden_state[char_index] == column[char_index]:
+                        prob *= oue.p
+                    else:
+                        prob *= oue.q
                 row_prob_list.append(prob)
             emission_prob_list.append(row_prob_list)
 
@@ -257,64 +282,45 @@ class HMM:
         self.model.emissionprob_ = np.array(matrix_list)
 
     def create_hbv_emission_matrix(self, hbv, seed):
-        row_value_list = create_emission_matrix_rows(hbv.g)
 
-        keep_bit_prob = hbv.p
-        flip_bit_prob = hbv.q
-
-        order = 0
-        emission_prob_list = list()
-        for row in range(self.k):
-            hash_value_of_hidden_state = (xxhash.xxh32(str(row), seed=seed).intdigest() % hbv.g)
-            bit_vector_of_hidden_state = decimal_to_binary(hash_value_of_hidden_state, hbv.g)
-            row_prob_list = list()
-            for column_index in range(len(row_value_list)):
-                column = row_value_list[column_index]
-                p_counter = 0
-                q_counter = 0
-                for char_index in range(hbv.g):
-                    if bit_vector_of_hidden_state[char_index] == column[char_index]:
-                        p_counter += 1
-                    else:
-                        q_counter += 1
-
-                row_prob_list.append((order, p_counter, q_counter))
-                order += 1
-            emission_prob_list.append(row_prob_list)
-
-        order = -1
+        hidden_state_list = create_emission_matrix_column(hbv.g)
         revised_column_dict_order = defaultdict(lambda: -1)
-        q_counter_dict = defaultdict(lambda: 0)
         q_counter_to_value_dict = defaultdict(lambda: -1)
 
-        for column_index in range(len(emission_prob_list[0])):
-            q_counter = 0
-            for row_index in range(len(emission_prob_list)):
-                element = emission_prob_list[row_index][column_index]
-                q_counter += element[2]
+        order = -1
+        esad = dict()
+        for hidden_state in hidden_state_list:
+            for q_counter in range(hbv.g // 4 + 1):
+                binary_number_list = flip_bits(hidden_state, q_counter)
+                for binary_number in binary_number_list:
+                    if binary_number not in esad:
+                        esad[binary_to_decimal(binary_number)] = binary_number
 
+        # Sort dictionary by key
+        esad = {k: v for k, v in sorted(esad.items(), key=lambda item: item[0])}
+
+        for key in esad:
+            column = esad[key]
+            q_counter = 0
+            for hidden_state in hidden_state_list:
+                for char_index in range(hbv.g):
+                    if hidden_state[char_index] != column[char_index]:
+                        q_counter += 1
             if q_counter <= (hbv.g // 4) * hbv.g:
                 order += 1
-                revised_column_dict_order[row_value_list[column_index]] = order
-            else:
-                if q_counter not in q_counter_dict:
-                    order += 1
-                    q_counter_dict[q_counter] = order
-                    revised_column_dict_order[row_value_list[column_index]] = order
-            q_counter_to_value_dict[row_value_list[column_index]] = order
+                revised_column_dict_order[column] = order
+            q_counter_to_value_dict[column] = order
 
         emission_prob_list = list()
-        for row in range(self.k):
-            hash_value_of_hidden_state = (xxhash.xxh32(str(row), seed=seed).intdigest() % hbv.g)
-            bit_vector_of_hidden_state = decimal_to_binary(hash_value_of_hidden_state, hbv.g)
+        for hidden_state in hidden_state_list:
             row_prob_list = list()
             for column in revised_column_dict_order:
                 prob = 1
                 for char_index in range(hbv.g):
-                    if bit_vector_of_hidden_state[char_index] == column[char_index]:
-                        prob *= keep_bit_prob
+                    if hidden_state[char_index] == column[char_index]:
+                        prob *= hbv.p
                     else:
-                        prob *= flip_bit_prob
+                        prob *= hbv.q
                 row_prob_list.append(prob)
             emission_prob_list.append(row_prob_list)
 
@@ -327,8 +333,6 @@ class HMM:
 
         self.dict_order = q_counter_to_value_dict
         self.model.emissionprob_ = np.array(emission_prob_list)
-
-
 
     def create_plain_protocol_model(self, protocol, seed=None):
         emission_function = f"create_{protocol.name}_emission_matrix"

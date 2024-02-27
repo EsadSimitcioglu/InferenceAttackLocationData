@@ -14,6 +14,8 @@ class HBV:
         self.q = 1 / (np.exp(epsilon / 2) + 1)
         self.g = int(round(np.exp(epsilon))) + 1
 
+        self.is_bit_vector = True
+
     def client(self, input_data_list, seed):
         rappor = RAPPOR(self.g, self.epsilon)
         report_list = list()

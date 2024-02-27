@@ -8,10 +8,8 @@ from hidden_markov_model.helper import decimal_to_binary
 
 
 def create_emission_matrix_rows(k):
-    row_list = list()
     for x in range(2 ** k):
-        row_list.append((bin(x)[2:].zfill(k)))
-    return row_list
+        yield bin(x)[2:].zfill(k)
 
 
 def create_emission_matrix_column(k):
@@ -41,47 +39,31 @@ epsilon =0.5
 p = (np.exp(epsilon / 2)) / (np.exp(epsilon / 2) + 1)
 q = 1 / (np.exp(epsilon / 2) + 1)
 g = int(round(np.exp(epsilon))) + 1
-row_value_list = create_emission_matrix_rows(k)
-
+hidden_state_list = create_emission_matrix_column(k)
 order = 0
-emission_prob_list = list()
-for row in range(k):
-    bit_vector_of_hidden_state = decimal_to_binary(row, k)
-    row_prob_list = list()
-    for column_index in range(len(row_value_list)):
-        column = row_value_list[column_index]
-        p_counter = 0
-        q_counter = 0
-        for char_index in range(k):
-            if bit_vector_of_hidden_state[char_index] == column[char_index]:
-                p_counter += 1
-            else:
-                q_counter += 1
-
-        row_prob_list.append((order, p_counter, q_counter))
-        order += 1
-    emission_prob_list.append(row_prob_list)
-
-order = -1
 revised_column_dict_order = defaultdict(lambda: -1)
 q_counter_dict = defaultdict(lambda: 0)
 q_counter_to_value_dict = defaultdict(lambda: -1)
-
-for column_index in range(len(emission_prob_list[0])):
+esad = list()
+emission_prob_list = list()
+for column in create_emission_matrix_rows(k):
     q_counter = 0
-    for row_index in range(len(emission_prob_list)):
-        element = emission_prob_list[row_index][column_index]
-        q_counter += element[2]
-
+    for hidden_state in hidden_state_list:
+        for char_index in range(k):
+            if hidden_state[char_index] != column[char_index]:
+                q_counter += 1
     if q_counter <= (k // 4) * k:
         order += 1
-        revised_column_dict_order[row_value_list[column_index]] = order
+        revised_column_dict_order[column] = order
+        esad.append(binary_to_decimal(column))
+    """
     else:
         if q_counter not in q_counter_dict:
             order += 1
             q_counter_dict[q_counter] = order
-            revised_column_dict_order[row_value_list[column_index]] = order
-    q_counter_to_value_dict[row_value_list[column_index]] = order
+            revised_column_dict_order[column] = order
+    """
+    q_counter_to_value_dict[column] = order
 
 emission_prob_list = list()
 for row in range(k):

@@ -16,11 +16,19 @@ class OLH:
         self.is_hash_used = True
 
     def client(self, input_data, seed):
-        report_value = (xxhash.xxh32(str(input_data - 1), seed=seed).intdigest() % self.g)
+        report_value = self.hash_input(input_data, seed)
+        return self.apply_grr(report_value)
+
+    def hash_input(self, input_data, seed):
+        return xxhash.xxh32(str(input_data - 1), seed=seed).intdigest() % self.g
+
+    def apply_grr(self, report_value):
+        domain = np.arange(0, self.g)
         rnd = np.random.random()
-        if rnd > self.p:
-            report_value = np.random.randint(0, self.g)
-        return report_value
+        if rnd <= self.p:
+            return report_value
+        else:
+            return np.random.choice(domain[domain != report_value])
 
     def server(self, reports):
         # Count how many times each value has been reported
@@ -48,10 +56,10 @@ class OLH:
         for input_data in input_list:
             if input_data != prev_value:
                 fake_input_value = self.client(input_data, seed)
-                memoization_dict[input_data] = fake_input_value -1
-                user_list.append(self.client(fake_input_value, seed))
+                memoization_dict[input_data] = fake_input_value
+                user_list.append(self.apply_grr(memoization_dict[input_data]))
             else:
-                user_list.append(self.client(memoization_dict[input_data], seed))
+                user_list.append(self.apply_grr(memoization_dict[input_data]))
             prev_value = input_data
 
         return user_list

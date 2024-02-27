@@ -1,4 +1,5 @@
 from collections import defaultdict
+from itertools import combinations
 
 import numpy as np
 
@@ -72,10 +73,9 @@ def analyze_taken_path(users_grid_value_list):
 
 
 def create_emission_matrix_rows(k):
-    row_list = list()
     for x in range(2 ** k):
-        row_list.append((bin(x)[2:].zfill(k)))
-    return row_list
+        yield bin(x)[2:].zfill(k)
+
 
 
 def create_emission_matrix_column(k):
@@ -211,15 +211,17 @@ def calculate_prob(k, p, q, q_counter):
 
 def find_bit_vector_with_q_counter(bit_vector, k, q_counter):
     res_bit_vector = ''
+
     for i in range(k):
-        if q_counter > 0:
+        if q_counter < 0:
             res_bit_vector += bit_vector[i]
-            q_counter -= 1
         else:
             if bit_vector[i] == '0':
                 res_bit_vector += '1'
             else:
                 res_bit_vector += '0'
+            q_counter -= 1
+
     return res_bit_vector
 
 
@@ -234,17 +236,37 @@ def calculate_q_counter(k, report):
     return q_counter // k
 
 
-def find_closest_hidden_state(k, report):
+def find_closest_hidden_state(k, report, dict_order):
     bit_vector = decimal_to_binary(report, k)
-    hidden_state_list = create_emission_matrix_column(k)
-    min_q_counter = float('inf')
-    closest_hidden_state = ''
-    for hidden_state in hidden_state_list:
-        q_counter = 0
-        for j in range(k):
-            if bit_vector[j] != hidden_state[j]:
-                q_counter += 1
-        if q_counter < min_q_counter:
-            min_q_counter = q_counter
-            closest_hidden_state = hidden_state
-    return closest_hidden_state
+    q_counter = k//4 + 1
+    while q_counter < k:
+        for element in flip_bits(bit_vector, q_counter):
+            if element in dict_order:
+                return bit_vector
+        q_counter += 1
+    return 0
+
+def flip_bits(binary_number, alpha_number):
+    # Convert binary number to a list of integers
+    binary_list = [int(bit) for bit in binary_number]
+
+    # Generate all combinations of indices to flip alpha number of bits
+    flip_combinations = combinations(range(len(binary_list)), alpha_number)
+
+    # Initialize a list to store the new binary numbers
+    new_binary_numbers = []
+
+    # Iterate through each combination
+    for flip_indices in flip_combinations:
+        # Create a copy of the original binary list
+        new_binary = binary_list.copy()
+
+        # Flip the bits at the selected indices
+        for index in flip_indices:
+            new_binary[index] = 1 - new_binary[index]
+
+        # Convert the list back to a binary string and append to the result
+        new_binary_numbers.append("".join(map(str, new_binary)))
+
+    return new_binary_numbers
+

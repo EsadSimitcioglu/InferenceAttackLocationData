@@ -75,7 +75,7 @@ def experiment(epsilon, k, user_values_list):
     for user_index, report in enumerate(perturbed_reports):
         hbv_model = HMM(k, epsilon)
         hbv_model.create_plain_protocol_model(hbv, user_index + 1)
-        guess_list.append(hbv_model.guess_user_values(report))
+        guess_list.append(hbv_model.guess_user_values(hbv, report))
     return experiment_metrics('PA', user_values_list, guess_list)
 
 

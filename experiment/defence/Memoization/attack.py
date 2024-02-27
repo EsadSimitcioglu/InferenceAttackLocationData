@@ -36,6 +36,8 @@ probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
 user_trajectory_list = read_dataset('../../../dataset/geolife/geolife_grid.dat')
+dataset_name = 'geolife'
+metric = "NDE"
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
@@ -43,22 +45,23 @@ for epsilon in epsilon_list:
 
     grr_model = HMM(k, epsilon)
     grr_m = GRR(k, epsilon)
-    probability_of_guess_grr.append(experiment(grr_m, grr_model, user_trajectory_list, 'NDE', 'geolife'))
+    probability_of_guess_grr.append(experiment(grr_m, grr_model, user_trajectory_list, metric, dataset_name))
     print("GRR_M is Ready")
 
     rappor_model = HMM(k, epsilon)
     rappor_m = RAPPOR(k, epsilon)
-    probability_of_guess_rappor.append(experiment(rappor_m, rappor_model, user_trajectory_list, 'NDE', 'geolife'))
+    probability_of_guess_rappor.append(experiment(rappor_m, rappor_model, user_trajectory_list, metric, dataset_name))
     print("RAPPOR_M is Ready")
 
     oue_m = OUE(k, epsilon)
     oue_model = HMM(k, epsilon)
-    probability_of_guess_oue.append(experiment(oue_m, oue_model, user_trajectory_list, 'NDE', 'geolife'))
+    probability_of_guess_oue.append(experiment(oue_m, oue_model, user_trajectory_list, metric, dataset_name))
     print("OUE is Ready")
 
-    olh_m = OLH(k, 5)
-    olh_model = HMM(k, 5)
-    probability_of_guess_olh.append(experiment_olh(olh_m, olh_model, user_trajectory_list, 'NDE', 'geolife'))
+
+    olh_m = OLH(k, epsilon)
+    olh_model = HMM(k, epsilon)
+    probability_of_guess_olh.append(experiment_olh(olh_m, olh_model, user_trajectory_list, metric, dataset_name))
     print("OLH is Ready")
 
 print("GRR: " + str(probability_of_guess_grr))
@@ -76,11 +79,10 @@ plt.plot(epsilon_list, probability_of_guess_oue, linewidth=2, color='blue', mark
          fillstyle='none', clip_on=False, label="OUE_M")
 plt.plot(epsilon_list, probability_of_guess_olh, linewidth=2, color='yellow', marker='x', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="OLH_M")
-#plt.ylim(0, 1)
-plt.title("GEOLIFE Dataset")
+plt.title(dataset_name + " Dataset")
 plt.ylabel("NDE")
 plt.xlabel('Epsilon Values')
 plt.grid(linestyle=':')
 plt.legend(prop={'size': 12}, ncol=2, columnspacing=0.75)
-plt.savefig('geolife_memoized_NDA.png', format='png', dpi=300, bbox_inches='tight')
+plt.savefig(dataset_name + '_memoized_' + metric + '.png', format='png', dpi=300, bbox_inches='tight')
 plt.show()
