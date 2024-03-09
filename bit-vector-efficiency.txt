@@ -20,12 +20,34 @@ RAPPOR: [0.02787695571941044, 0.05493786837521178, 0.09788241423469428, 0.166131
 
 ****************
 
-TIME - 1 State Comparision
+TIME - 1 Epsilon Comparision
 
 OLD
-Elapsed Time: 18409.144116163254
+Elapsed Time: 18409.144116163254 -> RAPPOR Taxi
+Total Size: 160.6133327484131 MB
+
+Elapsed Time: 2288.6757736206055 -> RAPPOR Geolife
+Total Size: 160.57755088806152 MB
+
+Elapsed Time: 3085.9815108776093 -> RAPPOR Brinkhoff
+
+Elapsed Time: 17147.80520772934 -> OUE Taxi
+Elapsed Time: 2261.141130208969 -> OUE Geolife
+Elapsed Time: 3275.350878238678 -> OUE Brinkhoff
+
 
 NEW
-Elapsed Time: 220.3870072364807
+Elapsed Time: 220.3870072364807 -> 2.5 min
 
 
+Total Size: 160.6133327484131 MB
+
+
+
+x
+
+
+k=25 +
+k=30 -
+
+2^k > x -
