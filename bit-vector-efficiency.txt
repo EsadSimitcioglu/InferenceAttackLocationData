@@ -29,11 +29,19 @@ Total Size: 160.6133327484131 MB
 Elapsed Time: 2288.6757736206055 -> RAPPOR Geolife
 Total Size: 160.57755088806152 MB
 
-Elapsed Time: 3085.9815108776093 -> RAPPOR Brinkhoff
+Elapsed Time: 3377.4683833122253 -> RAPPOR Brinkhoff
+Total Size: 160.5693874359131 MB
 
-Elapsed Time: 17147.80520772934 -> OUE Taxi
-Elapsed Time: 2261.141130208969 -> OUE Geolife
-Elapsed Time: 3275.350878238678 -> OUE Brinkhoff
+
+Elapsed Time: 18210.322709083557 -> OUE Taxi
+Total Size: 160.6132230758667 MB
+
+Elapsed Time: 2645.9604523181915 -> OUE Geolife
+Total Size: 160.57744121551514 MB
+
+Elapsed Time: 3456.8939657211304 -> OUE Brinkhoff
+Total Size: 160.5692777633667 MB
+
 
 
 NEW
