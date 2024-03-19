@@ -17,7 +17,10 @@
 | Brinkhoff | 160.56        | 8.27          | 160.56    | 8.27      |
 
 
+
 # Scaling - Time - Second
+
+## Taxi
 
 | Grid   | RAPPOR (Old) | RAPPOR (New) | OUE (Old) | OUE (New) |              
 | --------- | ------------- | -------------|-----------| --------- |
@@ -29,6 +32,8 @@
 | 6x5     | -               | 28522.38     | -            | 30494.64      |
 
 # Scaling - Memory Usage - Mb
+
+## Taxi
 
 | Grid   | RAPPOR (Old) | RAPPOR (New) | OUE (Old) | OUE (New) |
 | --------- | ------------- | -------------|-----------| --------- |
