@@ -18,7 +18,7 @@ class GRR:
         p = np.exp(self.epsilon) / (np.exp(self.epsilon) + self.k - 1)
 
         # Mapping domain size k to the range [0, ..., k-1]
-        domain = np.arange(1, self.k + 1)
+        domain = np.arange(0, self.k)
 
         # GRR perturbation function
         rnd = np.random.random()
