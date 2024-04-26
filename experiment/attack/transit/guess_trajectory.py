@@ -47,7 +47,7 @@ def guess_plain_user_trajectory_olh(protocol, hmm_model, user_trajectory_list, t
 def guess_fk_user_trajectory(protocol, hmm_model, user_trajectory_list, test_type='PA', dataset_name=None):
     report_list = perturb(protocol, user_trajectory_list)
     hmm_model.create_advance_protocol_model(protocol, user_trajectory_list)
-    guess_list = [hmm_model.guess_user_values(report) for report in report_list]
+    guess_list = [hmm_model.guess_user_values(protocol, report) for report in report_list]
     return experiment_metrics(test_type, user_trajectory_list, guess_list, dataset_name)
 
 
@@ -56,7 +56,7 @@ def guess_fk_user_trajectory_olh(protocol, hmm_model, user_trajectory_list, test
     guess_list = list()
     for user_index, report in enumerate(report_list):
         hmm_model.create_advance_protocol_model(protocol, user_trajectory_list, user_index + 1)
-        guess_list.append(hmm_model.guess_user_values(report))
+        guess_list.append(hmm_model.guess_user_values(protocol, report))
     return experiment_metrics(test_type, user_trajectory_list, guess_list, dataset_name)
 
 

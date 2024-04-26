@@ -99,7 +99,7 @@ if __name__ == '__main__':
     probability_of_guess_olh = list()
     probability_of_guess_olh_bit_vector = list()
 
-    with open('../../../dataset/taxi/taxi_grid_2.dat') as f:
+    with open('../../../dataset/taxi/taxi_grid_modified.dat') as f:
         reader = csv.reader(f, delimiter="\t")
         for line in reader:
             grid_list = line[0].split(" ")
