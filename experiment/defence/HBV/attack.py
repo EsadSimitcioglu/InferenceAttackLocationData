@@ -127,9 +127,9 @@ def hmm_model_HBV(epsilon, k, seed_counter):
 
 
 users_grid_value_list = list()
-epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
+epsilon_list = [3, 3.5, 4, 5]  # number of epsilon for test cases
 
-with open('../../../dataset/taxi/taxi_grid_2.dat') as f:
+with open('../../../dataset/taxi/taxi_grid_modified.dat') as f:
     reader = csv.reader(f, delimiter="\t")
     for line in reader:
         grid_list = line[0].split(" ")
