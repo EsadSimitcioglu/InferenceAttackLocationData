@@ -3,20 +3,21 @@ import csv
 import numpy as np
 
 users_grid_value_list = list()
+data_point_count = 8
 
-with open('../../../test/taxi_grid.dat') as f:
+with open('taxi_stationary_grid.dat') as f:
     reader = csv.reader(f, delimiter="\t")
     for line in reader:
         grid_list = line[0].split(" ")
         grid_list_int = [eval(i) for i in grid_list]
         grid_list_int_nd = np.array(grid_list_int)
-        grid_value = grid_list_int_nd[0]
-        asd = [grid_value] * len(grid_list_int_nd)
-        users_grid_value_list.append(asd)
+        if len(grid_list_int_nd) >= data_point_count:
+            asd = grid_list_int_nd[:data_point_count]
+            users_grid_value_list.append(asd)
 
 
 
-with open('../../dataset/taxi/taxi_grid_same2.dat', 'w', newline='') as csv_file:
+with open('taxi_grid_stationary_' + str(data_point_count) + '.dat', 'w', newline='') as csv_file:
     # Create a CSV writer object
     csv_writer = csv.writer(csv_file, delimiter=' ')
 
