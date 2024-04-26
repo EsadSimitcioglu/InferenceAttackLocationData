@@ -10,13 +10,13 @@ def isValidPos(i, j, n, m):
     return 1
 
 
-def getAdjacent(arr, number):
-    if number % 4 == 0:
-        i = int(number / 4) - 1
-        j = 3
+def getAdjacent(arr, number, column_count):
+    if number % column_count == 0:
+        i = int(number / column_count) - 1
+        j = column_count - 1
     else:
-        i = int(number / 4)
-        j = (number % 4) - 1
+        i = int(number / column_count)
+        j = (number % column_count) - 1
 
     # Size of given 2d array
     n = len(arr)

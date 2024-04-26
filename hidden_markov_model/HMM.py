@@ -1,5 +1,5 @@
 from collections import defaultdict
-
+import gc
 import numpy as np
 import xxhash
 from hmmlearn import hmm
@@ -25,14 +25,17 @@ class HMM:
     def guess_user_values(self, protocol, user_perturbed_report):
         obs_sequence_list = []
         for perturbed_report in user_perturbed_report:
+            #obs_sequence_list.append(perturbed_report)
 
             if protocol.is_bit_vector:
-                if decimal_to_binary(perturbed_report, self.k) in self.dict_order:
-                    obs_sequence_list.append(self.dict_order[decimal_to_binary(perturbed_report, self.k)])
+                if decimal_to_binary(perturbed_report, protocol.k) in self.dict_order:
+                    obs_sequence_list.append(self.dict_order[decimal_to_binary(perturbed_report, protocol.k)])
                 else:
-                    obs_sequence_list.append(0)
+                    random_number =np.random.randint(1, 21)
+                    obs_sequence_list.append(self.dict_order[decimal_to_binary(random_number, protocol.k)])
             else:
                 obs_sequence_list.append(perturbed_report)
+
 
         obs_sequence = np.array([obs_sequence_list]).T
 
@@ -58,7 +61,7 @@ class HMM:
         matrix_list = []
         for i in range(1, self.k + 1):
             sub_list = []
-            adjacent_elements = getAdjacent(self.grid, i)
+            adjacent_elements = getAdjacent(self.grid, i, 4)
             for j in range(1, self.k + 1):
                 if j in adjacent_elements or j == i:
                     sub_list.append(1 / (len(adjacent_elements) + 1))
@@ -89,7 +92,7 @@ class HMM:
         matrix_list = []
         for i in range(1, self.k + 1):
             sub_list = []
-            adjacent_elements = getAdjacent(self.grid, i)
+            adjacent_elements = getAdjacent(self.grid, i, 4)
             sum_of_path = 0
             if i in dict_of_path and i in dict_of_path[i]:
                 sum_of_path = dict_of_path[i][i]
@@ -184,6 +187,8 @@ class HMM:
         for x in range(2 ** self.k):
             rappor_report_list.append((bin(x)[2:].zfill(self.k)))
 
+        gc.collect()
+
         user_value_list = list()
         for i in range(self.k):
             bit_vector = ''
@@ -193,6 +198,8 @@ class HMM:
                 else:
                     bit_vector += '0'
             user_value_list.append(bit_vector)
+
+        gc.collect()
 
         emission_prob_list = list()
         p_counter = 0
@@ -210,6 +217,45 @@ class HMM:
                     else:
                         q_counter += 1
                         prob *= rappor.q
+                row_prob_list.append(prob)
+            emission_prob_list.append(row_prob_list)
+            gc.collect()
+
+        self.model.emissionprob_ = np.array(emission_prob_list)
+
+    def create_oueOld_emission_matrix(self, oue, seed):
+        oue_report_list = list()
+        for x in range(2 ** self.k):
+            oue_report_list.append((bin(x)[2:].zfill(self.k)))
+
+        user_value_list = list()
+        for i in range(self.k):
+            bit_vector = ''
+            for j in range(self.k):
+                if i == j:
+                    bit_vector += '1'
+                else:
+                    bit_vector += '0'
+            user_value_list.append(bit_vector)
+
+        emission_prob_list = list()
+        for row_index in range(len(user_value_list)):
+            row = user_value_list[row_index]
+            row_prob_list = list()
+            for column_index in range(len(oue_report_list)):
+                column = oue_report_list[column_index]
+                prob = 1
+                for char_index in range(len(row)):
+                    if row[char_index] == '1':
+                        if row[char_index] == column[char_index]:
+                            prob *= oue.p
+                        else:
+                            prob *= (1 - oue.p)
+                    else:
+                        if row[char_index] == column[char_index]:
+                            prob *= (1 - oue.q)
+                        else:
+                            prob *= oue.q
                 row_prob_list.append(prob)
             emission_prob_list.append(row_prob_list)
 
