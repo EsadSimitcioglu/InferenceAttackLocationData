@@ -6,7 +6,6 @@ from LDP.protocols.OUE import OUE
 from LDP.protocols.RAPPOR import RAPPOR
 from dataset.helper import read_dataset
 from experiment.attack.metrics import experiment_metrics
-from experiment.attack.transit.guess_trajectory import guess_plain_user_trajectory, ratio_of_guess
 from hidden_markov_model.HMM import HMM
 
 
@@ -35,8 +34,8 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-user_trajectory_list = read_dataset('../../../dataset/geolife/geolife_grid.dat')
-dataset_name = 'geolife'
+user_trajectory_list = read_dataset('../../../dataset/taxi/taxi_grid.dat')
+dataset_name = 'taxi'
 metric = "NDE"
 
 for epsilon in epsilon_list:

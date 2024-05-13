@@ -16,7 +16,7 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-with open('../../dataset/taxi/taxi_grid_same2.dat') as f:
+with open('../../dataset/geolife/geolife_grid.dat') as f:
     reader = csv.reader(f, delimiter="\t")
     for line in reader:
         grid_list = line[0].split(" ")

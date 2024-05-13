@@ -4,10 +4,11 @@ from matplotlib import pyplot as plt
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
 
 
-"""
+
 
 ################## Brinkhoff Plain Attack on Plain Dataset ##################
 
+dataset_name = "Brinkhoff"
 
 
 grr_list_plain_on_stationary = [0.07001286899261154, 0.11161843632431834, 0.18067383095800812, 0.2792744669737171, 0.40144443616467446, 0.5345251924852811, 0.6590879047713245, 0.7643773955364974, 0.8981175320644923]
@@ -15,15 +16,10 @@ rappor_list_plain_on_stationary = [0.08423650225794538, 0.12678243631057695, 0.1
 oue_list_plain_on_stationary = [0.08451795840577188, 0.13580071693740475, 0.21313546523466004, 0.30381707550123954, 0.3867955251556705, 0.4522713878221869, 0.4970320698284762, 0.5268810726244372, 0.5555088549246269]
 olh_list_plain_on_stationary = [0.025888209014528277, 0.016767715402698075, 0.0015538841239425786, 0.14618872768480004, 0.24361252521985727, 0.3716959770754203, 0.5158785749360235, 0.6526740821289306, 0.8379827260604579]
 
-grr_list_stationary_on_plain = [0.13268538903506416, 0.29232669279922674, 0.47188959888310156, 0.5728937335552811, 0.6106427535842776, 0.6183214304891801, 0.6241207109488267, 0.6246039843204639, 0.6264833807657199]
-rappor_list_stationary_on_plain = [0.21376792138753153, 0.4397787681898727, 0.5569457122912528, 0.5967889169306771, 0.6119851796166031, 0.6175696719110777, 0.6231004671642593, 0.6227245878752081, 0.6244965902378778]
-oue_stationary_on_plain = [0.21231810127261988, 0.44128228534607744, 0.548783762014713, 0.5932986092466305, 0.6057563228266123, 0.6148311228051334, 0.6164957310852172, 0.6173548837459056, 0.6191805831498685]
-olh_stationary_on_plain = [0.0648660258819739, 0.09375503409762122, 0.14090103635289697, 0.22762175804113194, 0.327551951887451, 0.4088492724050905, 0.47366160124577134, 0.5324598614616335, 0.5876604199108629]
-
-"""
-
 """
 ################## Geolife Plain Attack on Stationary Dataset ##################
+
+dataset_name = "Geolife"
 
 
 grr_list_plain_on_stationary =  [0.03569889608905023, 0.1008394193792996, 0.1674870701895634, 0.25332655833658513, 0.3748612173363498, 0.5131680627409552, 0.6219137679088661, 0.7398056483827987, 0.8776749287038615]
@@ -31,38 +27,24 @@ rappor_list_plain_on_stationary =  [0.05384429209697473, 0.11474206469158231, 0.
 oue_list_plain_on_stationary =  [0.047746095713477744, 0.12570363686068856, 0.20740929037213968, 0.3049327073510442, 0.36805976646221394, 0.39061905192026347, 0.4312415320308886, 0.4892964811385496, 0.5200206825848509]
 olh_list_plain_on_stationary =  [0.03756401694908515, 0.023494585815433573, 0.00011904761904761905, 0.12571593875845674, 0.22956208017211083, 0.3561828885007368, 0.5110452470517696, 0.6582050402727024, 0.840746145980398]
 
-grr_list_stationary_on_plain = [0.11638185032410135, 0.24108721272834413, 0.406673541543901, 0.5446375957572186, 0.6347230406599882, 0.6851060695344726, 0.7144961697112552, 0.7284177961107837, 0.7425604007071303]
-rappor_list_stationary_on_plain = [0.1961549793753683, 0.3720536240424278, 0.5183411903358869, 0.5980406599882145, 0.65571596935769, 0.6809074837949323, 0.6991750147318798, 0.714201532115498, 0.7287860931054803]
-oue_stationary_on_plain = [0.19247200942840306, 0.37197996464348854, 0.5085444902769594, 0.5845609899823218, 0.6363435474366529, 0.666101944608132, 0.6879051266941661, 0.6952710665880967, 0.7114761343547437]
-olh_stationary_on_plain = [0.06555686505598114, 0.08478196817913966, 0.13568061284619917, 0.21781084266352388, 0.3422952268709487, 0.4463022981732469, 0.548099587507366, 0.6194018856806128, 0.6979228049499117]
 
-"""
 
-"""
 
 
 ################## Taxi Plain Attack on Stationary Dataset ##################
 
-
+dataset_name = "Taxi"
 
 grr_list_plain_on_stationary =  [0.046282482815389124, 0.09617366454765816, 0.16849474857730062, 0.26360990917234245, 0.3840890492974602, 0.5167156185864729, 0.6442143854951207, 0.7508385040143558, 0.8915320098557492]
 rappor_list_plain_on_stationary =  [0.05941860470498097, 0.10037859223970051, 0.15552319655079055, 0.2290015557699418, 0.31732233975583307, 0.41797191188665117, 0.5170865673812115, 0.6038841064551889, 0.7353154390103571]
 oue_list_plain_on_stationary =  [0.0613080781671192, 0.11582159668857656, 0.1939146171636205, 0.2850763176175529, 0.36568540235504154, 0.42997650441441726, 0.4737069372584158, 0.5003020518563928, 0.5255065497594239]
 olh_list_plain_on_stationary =  [0.025998640270355318, 0.017553869801645167, 0.0035399405353754724, 0.12524246430627722, 0.22525706919007218, 0.356682540440025, 0.5012694839414108, 0.6402071244421612, 0.8374865520135258]
 
-grr_list_stationary_on_plain = [0.0861343159039556, 0.1507420845873297, 0.24796782268725565, 0.3367085759288949, 0.38648402853955127, 0.40962319166690103, 0.42078961925388386, 0.4264337749275729, 0.4322091900355338]
-rappor_list_stationary_on_plain = [0.12348700062817015, 0.22413485969304045, 0.30427811998987425, 0.35896642571184806, 0.3895217468755567, 0.40445719536091657, 0.4173206199195567, 0.41970204108420295, 0.42878706907058944]
-oue_stationary_on_plain = [0.12334636552002175, 0.2257568512736853, 0.30813152195314036, 0.36281045200123757, 0.3909843520003, 0.40755116774018135, 0.41508920953693546, 0.418464452132497, 0.42438987802248285]
-olh_stationary_on_plain = [0.05673220262706382, 0.07333652106245137, 0.09666319766733233, 0.15139838175868892, 0.2186500904752529, 0.280595167777684, 0.3288986395897205, 0.36452620032064803, 0.40747616234916884]
-
 """
+
 
 epsilon_list = epsilon_list[1:9:2] + [epsilon_list[-1]]
 
-grr_list_stationary_on_plain = grr_list_stationary_on_plain[1:9:2] + [grr_list_stationary_on_plain[-1]]
-rappor_list_stationary_on_plain = rappor_list_stationary_on_plain[1:9:2] + [rappor_list_stationary_on_plain[-1]]
-oue_stationary_on_plain = oue_stationary_on_plain[1:9:2] + [oue_stationary_on_plain[-1]]
-olh_stationary_on_plain = olh_stationary_on_plain[1:9:2] + [olh_stationary_on_plain[-1]]
 
 grr_list_plain_on_stationary = grr_list_plain_on_stationary[1:9:2] + [grr_list_plain_on_stationary[-1]]
 rappor_list_plain_on_stationary = rappor_list_plain_on_stationary[1:9:2] + [rappor_list_plain_on_stationary[-1]]
@@ -78,21 +60,29 @@ plt.subplots_adjust(bottom=0.15)  # Adjust the value as needed
 
 # Create bar charts for each dataset
 bar_width = 0.2
-epsilon_margin = 0.05  # Adjust the margin as needed
+epsilon_margin = 0.1  # Adjust the margin as needed
 
 epsilon_list_with_margin = np.arange(len(epsilon_list))
+"""
 plt.bar(epsilon_list_with_margin - 0.3 - epsilon_margin, grr_list_stationary_on_plain, width=bar_width, color='purple', label="GRR")
 plt.bar(epsilon_list_with_margin - epsilon_margin, rappor_list_stationary_on_plain, width=bar_width, color='grey', label="RAPPOR")
 plt.bar(epsilon_list_with_margin + 0.15 - epsilon_margin, oue_stationary_on_plain, width=bar_width, color='blue', label="OUE")
 plt.bar(epsilon_list_with_margin + 0.3 - epsilon_margin, olh_stationary_on_plain, width=bar_width, color='green', label="OLH")
+"""
+
+plt.bar(epsilon_list_with_margin - 1.5*bar_width, grr_list_plain_on_stationary, width=bar_width, color='purple', label="GRR")
+plt.bar(epsilon_list_with_margin - 0.5*bar_width, rappor_list_plain_on_stationary, width=bar_width,color='grey', label="RAPPOR")
+plt.bar(epsilon_list_with_margin + 0.5*bar_width, oue_list_plain_on_stationary, width=bar_width, color='blue', label="OUE")
+plt.bar(epsilon_list_with_margin + 1.5*bar_width, olh_list_plain_on_stationary, width=bar_width, color='green', label="OLH")
 
 # Adjust the x-axis tick positions to include margin
 plt.xticks(epsilon_list_with_margin - epsilon_margin, epsilon_list, fontsize=20)
-
+plt.yticks(fontsize=20)
 plt.ylim(0, 1)
-plt.title("Brinkhoff", fontsize=20)
-plt.ylabel("Prediction Accuracy")
-plt.xlabel('Epsilon Values')
+plt.ylabel("Prediction Accuracy", fontsize=20)
+plt.xlabel('Epsilon', fontsize=20)
 plt.grid(linestyle=':')
-plt.legend(prop={'size': 15}, ncol=2, columnspacing=0.75)
+plt.legend(prop={'size': 15}, ncol=1, columnspacing=0.75, loc='upper left')
+plt.title(dataset_name, fontsize=20)
+plt.savefig(dataset_name + '_plain_on_stationary' + ".png", dpi=300)
 plt.show()

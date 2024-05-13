@@ -19,6 +19,8 @@ max_lat = 30851.0
 min_long = 281.0
 min_lat = 3935.0
 
+write_filename = "brinkhoff_grid_1_5.dat"
+
 
 def preprocess_brinkhoff():
 
@@ -63,7 +65,7 @@ def preprocess_brinkhoff():
 def create_grid_brinkhoff():
     ##construct the rectangle using shapely
     rec = [(min_lat, min_long), (min_lat, max_long), (max_lat, max_long), (max_lat, min_long)]
-    nx, ny = 4, 5
+    nx, ny = 1, 5
 
     polygon = geometry.Polygon(rec)
     minx, miny, maxx, maxy = polygon.bounds
@@ -87,7 +89,7 @@ def create_grid_brinkhoff():
         plt.plot(x, y, color='#6699cc', alpha=0.7, linewidth=3, solid_capstyle='round', zorder=2)
     plt.show()
 
-    with open('brinkhoff_grid3.dat', 'w', newline='') as file:
+    with open(write_filename, 'w', newline='') as file:
         for user in users_grid_value_list:
             sequence_list = []
             for user_trajectory in user:

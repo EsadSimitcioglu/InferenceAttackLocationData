@@ -4,48 +4,60 @@ from LDP.protocols.GRR import GRR
 from LDP.protocols.OLH import OLH
 from LDP.protocols.OUE import OUE
 from LDP.protocols.RAPPOR import RAPPOR
-from experiment.attack.transit.guess_trajectory import guess_plain_user_trajectory, guess_plain_user_trajectory_olh
+from experiment.attack.transit.guess_trajectory import guess_plain_user_trajectory, guess_plain_user_trajectory_olh, \
+    guess_fk_user_trajectory, guess_fk_user_trajectory_olh, guess_advance_user_trajectory, \
+    guess_advance_user_trajectory_olh
 from dataset.helper import read_dataset
 from hidden_markov_model.HMM import HMM
 import time
+import tracemalloc
 
 k = 20
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
-iter_list = [1, 2, 3, 4, 5]
+
 users_grid_value_list = list()
 probability_of_guess_grr = list()
 probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-user_trajectory_list = read_dataset('../../dataset/taxi/taxi_grid_2.dat')
+user_trajectory_list = read_dataset('../../dataset/taxi/taxi_grid.dat')
+
 
 start_time = time.time()
+tracemalloc.start()
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
 
     grr = GRR(k, epsilon)
     grr_model = HMM(k, epsilon)
-    probability_of_guess_grr.append(guess_plain_user_trajectory(grr, grr_model, user_trajectory_list, 'PA', "taxi"))
+    probability_of_guess_grr.append(guess_plain_user_trajectory(grr, grr_model, user_trajectory_list, 'NDE', "taxi"))
     print("GRR is Ready")
 
     rappor = RAPPOR(k, epsilon)
     rappor_model = HMM(k, epsilon)
-    probability_of_guess_rappor.append(guess_plain_user_trajectory(rappor, rappor_model, user_trajectory_list, 'PA'))
+    probability_of_guess_rappor.append(
+        guess_plain_user_trajectory(rappor, rappor_model, user_trajectory_list, 'NDE', "taxi"))
     print("RAPPOR is Ready")
-    print("RAPPOR: " + str(probability_of_guess_rappor))
 
     oue = OUE(k, epsilon)
     oue_model = HMM(k, epsilon)
-    probability_of_guess_oue.append(guess_plain_user_trajectory(oue, oue_model, user_trajectory_list, 'PA'))
+    probability_of_guess_oue.append(guess_plain_user_trajectory(oue, oue_model, user_trajectory_list, 'NDE', "taxi"))
     print("OUE is Ready")
-    print("OUE: " + str(probability_of_guess_oue))
 
     olh = OLH(k, epsilon)
     olh_model = HMM(k, epsilon)
-    probability_of_guess_olh.append(guess_plain_user_trajectory_olh(olh, olh_model, user_trajectory_list, 'PA'))
+    probability_of_guess_olh.append(
+        guess_plain_user_trajectory_olh(olh, olh_model, user_trajectory_list, 'NDE', "taxi"))
     print("OLH is Ready")
+
+snapshot = tracemalloc.take_snapshot()
+top_stats = snapshot.statistics('lineno')
+
+total_size_bytes = sum(stat.size for stat in top_stats)
+total_size_mb = total_size_bytes / (1024 * 1024)  # Convert bytes to MB
+print("Total Size: " + str(total_size_mb) + " MB")
 
 elapsed_time = time.time() - start_time
 print("Elapsed Time: " + str(elapsed_time))
@@ -65,11 +77,10 @@ plt.plot(epsilon_list, probability_of_guess_oue, linewidth=2, color='blue', mark
 plt.plot(epsilon_list, probability_of_guess_olh, linewidth=2, color='yellow', marker='x', markersize=10, mew=1.5,
          fillstyle='none', clip_on=False, label="OLH")
 plt.xticks(fontsize=15)
-plt.title("TAXI Dataset")
-plt.ylim(0, 1)
+plt.title("Brinkhoff with 5 DP")
 plt.ylabel("PA")
 plt.xlabel('Epsilon Values')
 plt.grid(linestyle=':')
 plt.legend(prop={'size': 12}, ncol=2, columnspacing=0.75)
-plt.savefig('testst.png', format='png', dpi=300, bbox_inches='tight')
+plt.savefig('testst2.png', format='png', dpi=300, bbox_inches='tight')
 plt.show()

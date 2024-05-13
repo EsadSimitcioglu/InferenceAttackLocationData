@@ -36,7 +36,6 @@ class HMM:
             else:
                 obs_sequence_list.append(perturbed_report)
 
-
         obs_sequence = np.array([obs_sequence_list]).T
 
         _, state_sequence = self.model.decode(obs_sequence)
@@ -386,7 +385,6 @@ class HMM:
         getattr(self, emission_function)(protocol, seed)
 
     def create_advance_protocol_model(self, protocol, users_trajectory_list, seed=None):
-
         emission_function = f"create_{protocol.name}_emission_matrix"
         self.config_advance_model(users_trajectory_list)
         getattr(self, emission_function)(protocol, seed)

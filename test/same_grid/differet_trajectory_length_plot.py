@@ -6,7 +6,7 @@ dp_list = [2, 4, 6, 8]
 
 
 
-
+"""
 dataset_name = 'Taxi'
 data = {
     2: {
@@ -33,7 +33,8 @@ data = {
 
     }
 }
-
+"""
+"""
 dataset_name = 'Geolife'
 data = {
     2: {
@@ -62,7 +63,7 @@ data = {
     }
 }
 
-
+"""
 dataset_name = 'Brinkhoff'
 data = {
     2: {
@@ -94,7 +95,6 @@ data = {
 
 
 
-
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
 epsilon = 2.5
 
@@ -103,6 +103,8 @@ rappor_values = [data[key]["RAPPOR"][4] for key in data]
 oue_values = [data[key]["OUE"][4] for key in data]
 olh_values = [data[key]["OLH"][4] for key in data]
 
+for value in olh_values:
+    print(value)
 
 # Your existing code for creating the plot
 plt.rcParams.update({'font.size': 20})
@@ -118,7 +120,7 @@ plt.plot(dp_list, rappor_values, linewidth=2, color='grey', marker='s', markersi
          fillstyle='none', clip_on=False, label="RAPPOR")
 plt.plot(dp_list, oue_values, linewidth=2, color='blue', marker='x', markersize=15, mew=1.5,
          fillstyle='none', clip_on=False, label="OUE")
-plt.plot(dp_list, olh_values, linewidth=2, color='yellow', marker='x', markersize=15, mew=1.5,
+plt.plot(dp_list, olh_values, linewidth=2, color='green', marker='x', markersize=15, mew=1.5,
          fillstyle='none', clip_on=False, label="OLH")
 # Set the x-axis tick positions and labels
 plt.xticks(dp_list, fontsize=20)
