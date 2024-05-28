@@ -25,16 +25,18 @@ class HMM:
     def guess_user_values(self, protocol, user_perturbed_report):
         obs_sequence_list = []
         for perturbed_report in user_perturbed_report:
-            #obs_sequence_list.append(perturbed_report)
 
-            if protocol.is_bit_vector:
-                if decimal_to_binary(perturbed_report, protocol.k) in self.dict_order:
-                    obs_sequence_list.append(self.dict_order[decimal_to_binary(perturbed_report, protocol.k)])
-                else:
-                    random_number =np.random.randint(1, 21)
-                    obs_sequence_list.append(self.dict_order[decimal_to_binary(random_number, protocol.k)])
-            else:
+            if protocol.name == 'rapporOld' or protocol.name == 'oueOld':
                 obs_sequence_list.append(perturbed_report)
+            else:
+                if protocol.is_bit_vector:
+                    if decimal_to_binary(perturbed_report, protocol.k) in self.dict_order:
+                        obs_sequence_list.append(self.dict_order[decimal_to_binary(perturbed_report, protocol.k)])
+                    else:
+                        random_number =np.random.randint(1, 21)
+                        obs_sequence_list.append(self.dict_order[decimal_to_binary(random_number, protocol.k)])
+                else:
+                    obs_sequence_list.append(perturbed_report)
 
         obs_sequence = np.array([obs_sequence_list]).T
 

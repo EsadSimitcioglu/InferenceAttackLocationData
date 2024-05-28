@@ -79,3 +79,42 @@ class RAPPOR:
             perturbed_list.append(report)
 
         return perturbed_list
+
+    def recall(self, input_list):
+        perturbed_list = []
+
+        for user_trajectory in input_list:
+            user_list = list()
+            memoization_dict = {}
+            for input_data in user_trajectory:
+                if input_data not in memoization_dict:
+                    fake_input_data = self.client(input_data)
+                    memoization_dict[input_data] = fake_input_data
+                    user_list.append(fake_input_data)
+                else:
+                    user_list.append(self.client(memoization_dict[input_data]))
+            report = [self.convert_binary_report_to_decimal(report_string) for report_string in user_list]
+            perturbed_list.append(report)
+
+        return perturbed_list
+
+    def memoized_recall(self, input_list):
+        perturbed_list = []
+
+        for user_trajectory in input_list:
+            user_list = list()
+            prev_fake_value = -1
+            prev_value = -1
+            for input_data in user_trajectory:
+                if input_data != prev_value:
+                    fake_input_value = self.client(input_data)
+                    prev_fake_value = fake_input_value
+                    user_list.append(prev_fake_value)
+                else:
+                    user_list.append(prev_fake_value)
+                prev_value = input_data
+            report = [self.convert_binary_report_to_decimal(report_string) for report_string in user_list]
+            perturbed_list.append(report)
+
+        return perturbed_list
+

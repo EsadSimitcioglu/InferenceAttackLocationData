@@ -63,3 +63,30 @@ class OLH:
             prev_value = input_data
 
         return user_list
+
+    def recall(self, input_list, seed):
+        user_list = list()
+        memoization_dict = dict()
+        for input_data in input_list:
+            if input_data not in memoization_dict:
+                fake_input_value = self.client(input_data, seed)
+                memoization_dict[input_data] = fake_input_value
+                user_list.append(memoization_dict[input_data])
+            else:
+                user_list.append(memoization_dict[input_data])
+        return user_list
+
+
+
+    def memoized_recall(self, input_list, seed):
+        user_list = list()
+        fake_input_value = -1
+        prev_value = -1
+        for input_data in input_list:
+            if input_data != prev_value:
+                fake_input_value = self.client(input_data, seed)
+                user_list.append(fake_input_value)
+            else:
+                user_list.append(fake_input_value)
+            prev_value = input_data
+        return user_list
