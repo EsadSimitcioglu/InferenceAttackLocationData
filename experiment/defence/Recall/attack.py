@@ -36,9 +36,9 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-dataset_name = 'geolife'
+dataset_name = 'taxi'
 user_trajectory_list = read_dataset('../../../dataset/' + dataset_name + '/' + dataset_name + '_grid.dat')
-metric = "PA"
+metric = "NDE"
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
