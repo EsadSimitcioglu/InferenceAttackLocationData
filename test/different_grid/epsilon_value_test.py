@@ -12,7 +12,7 @@ from hidden_markov_model.HMM import HMM
 import time
 import tracemalloc
 
-k = 20
+k = 25
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
 
 users_grid_value_list = list()
@@ -21,35 +21,37 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-user_trajectory_list = read_dataset('../../dataset/taxi/taxi_grid.dat')
+user_trajectory_list = read_dataset('../../dataset/brinkhoff/brinkhoff_grid_5_5.dat')
 
 
 start_time = time.time()
 tracemalloc.start()
+
+metric_type = "PA"
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
 
     grr = GRR(k, epsilon)
     grr_model = HMM(k, epsilon)
-    probability_of_guess_grr.append(guess_plain_user_trajectory(grr, grr_model, user_trajectory_list, 'NDE', "taxi"))
+    probability_of_guess_grr.append(guess_plain_user_trajectory(grr, grr_model, user_trajectory_list, metric_type, "taxi"))
     print("GRR is Ready")
 
     rappor = RAPPOR(k, epsilon)
     rappor_model = HMM(k, epsilon)
     probability_of_guess_rappor.append(
-        guess_plain_user_trajectory(rappor, rappor_model, user_trajectory_list, 'NDE', "taxi"))
+        guess_plain_user_trajectory(rappor, rappor_model, user_trajectory_list, metric_type, "taxi"))
     print("RAPPOR is Ready")
 
     oue = OUE(k, epsilon)
     oue_model = HMM(k, epsilon)
-    probability_of_guess_oue.append(guess_plain_user_trajectory(oue, oue_model, user_trajectory_list, 'NDE', "taxi"))
+    probability_of_guess_oue.append(guess_plain_user_trajectory(oue, oue_model, user_trajectory_list, metric_type, "taxi"))
     print("OUE is Ready")
 
     olh = OLH(k, epsilon)
     olh_model = HMM(k, epsilon)
     probability_of_guess_olh.append(
-        guess_plain_user_trajectory_olh(olh, olh_model, user_trajectory_list, 'NDE', "taxi"))
+        guess_plain_user_trajectory_olh(olh, olh_model, user_trajectory_list, metric_type, "taxi"))
     print("OLH is Ready")
 
 snapshot = tracemalloc.take_snapshot()

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
-defences = ['Plain', 'Memoized', 'Recall', 'Memoized Recall']
+defences = ['1x5', '2x5', '3x5']
 
 """
 dataset_name = 'Taxi'
@@ -84,8 +84,6 @@ memoized_recall_data = {
 """
 
 """
-
-
 dataset_name = "Geolife"
 
 plain_data = {
@@ -219,29 +217,29 @@ memoized_recall_data = {
 "OLH": [0.023353706543098388, 0.016912856986681928, 0.01219269081625435, 0.0846010320425605, 0.18524860797357148, 0.3224659882537866, 0.4865583668114809, 0.6428079935986536, 0.8436980085822874]
 }
 
-protocol_name = "OLH"
-values = np.array([plain_data[protocol_name], memoized_data[protocol_name], recall_data[protocol_name],
-                   memoized_recall_data[protocol_name]])
+for protocol_name in plain_data.keys():
+    values = np.array([five[protocol_name], ten[protocol_name], fiveteen[protocol_name]])
 
-# Transpose the values array
-values = values.T
+    # Transpose the values array
+    values = values.T
 
-# Plot
-fig, ax = plt.subplots(figsize=(10, 6))
-bar_width = 0.2
-index = np.arange(len(epsilon_list))
+    # Plot
+    fig, ax = plt.subplots(figsize=(10, 6))
+    bar_width = 0.2
+    index = np.arange(len(epsilon_list))
 
-for i, technique in enumerate(defences):
-    ax.bar(index + i * bar_width, values[:, i], bar_width, label=technique)
+    for i, technique in enumerate(defences):
+        ax.bar(index + i * bar_width, values[:, i], bar_width, label=technique)
 
-ax.set_ylim(0, 1)
-ax.set_xlabel('Epsilon')
-ax.set_ylabel('Prediction Accuracy')
-ax.set_title('Comparison of ' + protocol_name + ' Defences on ' + dataset_name + ' Dataset')
-ax.set_xticks(index + 1.5 * bar_width)
-ax.set_xticklabels(epsilon_list)
-ax.legend()
-
-plt.savefig(dataset_name + '_' + protocol_name + '_defences.png')
-plt.tight_layout()
-plt.show()
+    plt.ylim(0, 1)
+    plt.yticks(fontsize=20)
+    plt.xlabel('Epsilon', fontsize=20)
+    plt.ylabel('PA', fontsize=20)
+    plt.title('Comparison of ' + protocol_name + ' Defences on ' + dataset_name + ' Dataset', fontsize=20)
+    plt.xticks(index + 1.5 * bar_width, fontsize=20)
+    ax.set_xticklabels(epsilon_list, fontsize=20)
+    plt.legend(prop={'size': 15}, ncol=1, columnspacing=0.75, loc='upper left')
+    plt.grid(linestyle=':')
+    plt.savefig(dataset_name + '_' + protocol_name + '_defences.png')
+    plt.tight_layout()
+    plt.show()

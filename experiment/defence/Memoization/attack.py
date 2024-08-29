@@ -26,7 +26,7 @@ def experiment_olh(protocol, hmm_model, user_trajectory_list, test_type='PA', da
 
 
 # Parameters for simulation
-k = 20  # attribute's domain size (grid size)
+k = 25  # attribute's domain size (grid size)
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
 users_grid_value_list = list()
 probability_of_guess_grr = list()
@@ -34,13 +34,12 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-user_trajectory_list = read_dataset('../../../dataset/taxi/taxi_grid.dat')
+user_trajectory_list = read_dataset('../../../dataset/brinkhoff/brinkhoff_grid_5_5.dat')
 dataset_name = 'taxi'
-metric = "NDE"
+metric = "PA"
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
-
 
     grr_model = HMM(k, epsilon)
     grr_m = GRR(k, epsilon)
@@ -56,7 +55,6 @@ for epsilon in epsilon_list:
     oue_model = HMM(k, epsilon)
     probability_of_guess_oue.append(experiment(oue_m, oue_model, user_trajectory_list, metric, dataset_name))
     print("OUE is Ready")
-
 
     olh_m = OLH(k, epsilon)
     olh_model = HMM(k, epsilon)

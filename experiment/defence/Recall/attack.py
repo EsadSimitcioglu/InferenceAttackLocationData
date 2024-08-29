@@ -9,6 +9,7 @@ from LDP.protocols.RAPPOR import RAPPOR
 from dataset.helper import read_dataset
 from experiment.attack.metrics import experiment_metrics
 from hidden_markov_model.HMM import HMM
+from experiment.attack.transit.guess_trajectory import guess_plain_user_trajectory
 
 
 def experiment(protocol, hmm_model, user_trajectory_list, test_type='PA', dataset_name=None):
@@ -28,43 +29,47 @@ def experiment_olh(protocol, hmm_model, user_trajectory_list, test_type='PA', da
 
 
 # Parameters for simulation
-k = 20  # attribute's domain size (grid size)
+k = 15  # attribute's domain size (grid size)
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
 users_grid_value_list = list()
 probability_of_guess_grr = list()
+probability_of_guess_grr_m = list()
 probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-dataset_name = 'taxi'
-user_trajectory_list = read_dataset('../../../dataset/' + dataset_name + '/' + dataset_name + '_grid.dat')
-metric = "NDE"
+dataset_name = 'brinkhoff'
+user_trajectory_list = read_dataset('../../../dataset/' + dataset_name + '/' + dataset_name + '_grid_3_5.dat')
+metric = "PA"
 
 for epsilon in epsilon_list:
     print("Epsilon Value: " + str(epsilon))
 
-    grr_model = HMM(k, epsilon)
+    grr_m_model = HMM(k, epsilon)
     grr_m = GRR(k, epsilon)
-    probability_of_guess_grr.append(experiment(grr_m, grr_model, user_trajectory_list, metric, dataset_name))
+    probability_of_guess_grr_m.append(experiment(grr_m, grr_m_model, user_trajectory_list, metric, dataset_name))
     print("GRR_M is Ready")
-
-    rappor_model = HMM(k, epsilon)
-    rappor_m = RAPPOR(k, epsilon)
-    probability_of_guess_rappor.append(experiment(rappor_m, rappor_model, user_trajectory_list, metric, dataset_name))
-    print("RAPPOR_M is Ready")
-
-    oue_m = OUE(k, epsilon)
-    oue_model = HMM(k, epsilon)
-    probability_of_guess_oue.append(experiment(oue_m, oue_model, user_trajectory_list, metric, dataset_name))
-    print("OUE is Ready")
-
-
+    
     olh_m = OLH(k, epsilon)
     olh_model = HMM(k, epsilon)
     probability_of_guess_olh.append(experiment_olh(olh_m, olh_model, user_trajectory_list, metric, dataset_name))
     print("OLH is Ready")
 
+    rappor_model = HMM(k, epsilon)
+    rappor_m = RAPPOR(k, epsilon)
+    rappor_m.name = "rapporOld"
+    probability_of_guess_rappor.append(experiment(rappor_m, rappor_model, user_trajectory_list, metric, dataset_name))
+    print("RAPPOR_M is Ready")
+
+    oue_m = OUE(k, epsilon)
+    oue_model = HMM(k, epsilon)
+    oue_m.name = "oueOld"
+    probability_of_guess_oue.append(experiment(oue_m, oue_model, user_trajectory_list, metric, dataset_name))
+    print("OUE is Ready")
+
+
 print("GRR: " + str(probability_of_guess_grr))
+print("GRR_M: " + str(probability_of_guess_grr_m))
 print("RAPPOR: " + str(probability_of_guess_rappor))
 print("OUE: " + str(probability_of_guess_oue))
 print("OLH: " + str(probability_of_guess_olh))

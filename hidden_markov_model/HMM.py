@@ -16,7 +16,7 @@ class HMM:
         self.k = k
         self.epsilon = epsilon
         self.model = hmm.MultinomialHMM(n_components=k, algorithm='viterbi')
-        self.grid = np.arange(k).reshape(k // 4, k // 5)
+        self.grid = np.arange(k).reshape(2, 5)
 
         self.is_bit_vector = True
 
@@ -33,7 +33,7 @@ class HMM:
                     if decimal_to_binary(perturbed_report, protocol.k) in self.dict_order:
                         obs_sequence_list.append(self.dict_order[decimal_to_binary(perturbed_report, protocol.k)])
                     else:
-                        random_number =np.random.randint(1, 21)
+                        random_number = np.random.randint(1, self.k + 1)
                         obs_sequence_list.append(self.dict_order[decimal_to_binary(random_number, protocol.k)])
                 else:
                     obs_sequence_list.append(perturbed_report)
@@ -62,7 +62,7 @@ class HMM:
         matrix_list = []
         for i in range(1, self.k + 1):
             sub_list = []
-            adjacent_elements = getAdjacent(self.grid, i, 4)
+            adjacent_elements = getAdjacent(self.grid, i, 5)
             for j in range(1, self.k + 1):
                 if j in adjacent_elements or j == i:
                     sub_list.append(1 / (len(adjacent_elements) + 1))
@@ -158,7 +158,6 @@ class HMM:
                 order += 1
                 revised_column_dict_order[column] = order
             q_counter_to_value_dict[column] = order
-
 
         emission_prob_list = list()
         for hidden_state in hidden_state_list:

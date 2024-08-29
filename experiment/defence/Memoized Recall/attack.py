@@ -1,5 +1,4 @@
 
-
 from matplotlib import pyplot as plt
 
 from LDP.protocols.GRR import GRR
@@ -28,7 +27,7 @@ def experiment_olh(protocol, hmm_model, user_trajectory_list, test_type='PA', da
 
 
 # Parameters for simulation
-k = 20  # attribute's domain size (grid size)
+k = 10  # attribute's domain size (grid size)
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
 users_grid_value_list = list()
 probability_of_guess_grr = list()
@@ -36,8 +35,8 @@ probability_of_guess_rappor = list()
 probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
-dataset_name = 'geolife'
-user_trajectory_list = read_dataset('../../../dataset/' + dataset_name + '/' + dataset_name + '_grid.dat')
+dataset_name = 'taxi'
+user_trajectory_list = read_dataset('../../../dataset/' + dataset_name + '/' + dataset_name + '_grid_2_5.dat')
 metric = "PA"
 
 for epsilon in epsilon_list:
@@ -50,14 +49,15 @@ for epsilon in epsilon_list:
 
     rappor_model = HMM(k, epsilon)
     rappor_m = RAPPOR(k, epsilon)
+    rappor_m.name = 'rapporOld'
     probability_of_guess_rappor.append(experiment(rappor_m, rappor_model, user_trajectory_list, metric, dataset_name))
     print("RAPPOR_M is Ready")
 
     oue_m = OUE(k, epsilon)
+    oue_m.name = 'oueOld'
     oue_model = HMM(k, epsilon)
     probability_of_guess_oue.append(experiment(oue_m, oue_model, user_trajectory_list, metric, dataset_name))
     print("OUE is Ready")
-
 
     olh_m = OLH(k, epsilon)
     olh_model = HMM(k, epsilon)

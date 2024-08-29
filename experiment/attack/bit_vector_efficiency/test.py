@@ -14,14 +14,14 @@ import tracemalloc
 
 k = 20
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
-
+beta_list = [16]
 users_grid_value_list = list()
 probability_of_guess_rappor_old = list()
 probability_of_guess_rappor = list()
 probability_of_guess_oue_old = list()
 probability_of_guess_oue = list()
 
-dataset_name = "brinkhoff"
+dataset_name = "taxi"
 
 user_trajectory_list = read_dataset('../../../dataset/' + dataset_name + '/' + dataset_name + '_grid.dat')
 
@@ -30,8 +30,9 @@ print(dataset_name + " Dataset is Ready")
 start_time = time.time()
 tracemalloc.start()
 
-for epsilon in epsilon_list:
-    print("Epsilon Value: " + str(epsilon))
+for beta in beta_list:
+    epsilon = 2
+    print("Beta Value: " + str(beta))
 
     """"
     rappor_old = RAPPOR(k, epsilon)
@@ -55,13 +56,23 @@ for epsilon in epsilon_list:
 
     
     """
+    """
 
+    rappor = RAPPOR(k, epsilon)
+    rappor_model = HMM(k, epsilon, beta)
+    probability_of_guess_rappor.append(
+        guess_plain_user_trajectory(rappor, rappor_model, user_trajectory_list, 'PA', "taxi"))
+    print("RAPPOR is Ready")
 
-    oue= OUE(k, epsilon)
-    oue_model = HMM(k, epsilon)
+    """
+    oue = OUE(k, epsilon)
+    oue_model = HMM(k, epsilon, beta)
     probability_of_guess_oue.append(
         guess_plain_user_trajectory(oue, oue_model, user_trajectory_list, 'PA', "taxi"))
-    print("OUE_old is Ready")
+    print("OUE is Ready")
+
+    print(probability_of_guess_rappor)
+    print(probability_of_guess_oue)
 
 snapshot = tracemalloc.take_snapshot()
 top_stats = snapshot.statistics('lineno')
