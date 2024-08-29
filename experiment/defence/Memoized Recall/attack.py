@@ -27,7 +27,7 @@ def experiment_olh(protocol, hmm_model, user_trajectory_list, test_type='PA', da
 
 
 # Parameters for simulation
-k = 10  # attribute's domain size (grid size)
+k = 5  # attribute's domain size (grid size)
 epsilon_list = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5]  # number of epsilon for test cases
 users_grid_value_list = list()
 probability_of_guess_grr = list()
@@ -36,7 +36,7 @@ probability_of_guess_oue = list()
 probability_of_guess_olh = list()
 
 dataset_name = 'taxi'
-user_trajectory_list = read_dataset('../../../dataset/' + dataset_name + '/' + dataset_name + '_grid_2_5.dat')
+user_trajectory_list = read_dataset('../../../dataset/' + dataset_name + '/' + dataset_name + '_grid_1_5.dat')
 metric = "PA"
 
 for epsilon in epsilon_list:

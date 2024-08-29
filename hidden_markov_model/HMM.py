@@ -16,7 +16,7 @@ class HMM:
         self.k = k
         self.epsilon = epsilon
         self.model = hmm.MultinomialHMM(n_components=k, algorithm='viterbi')
-        self.grid = np.arange(k).reshape(2, 5)
+        self.grid = np.arange(k).reshape(1, 5)
 
         self.is_bit_vector = True
 
