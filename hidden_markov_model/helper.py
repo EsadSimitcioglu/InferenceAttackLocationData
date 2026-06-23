@@ -73,20 +73,19 @@ def analyze_taken_path(users_grid_value_list):
 
 
 def create_emission_matrix_rows(k):
-    for x in range(2 ** k):
+    for x in range(2**k):
         yield bin(x)[2:].zfill(k)
-
 
 
 def create_emission_matrix_column(k):
     column_list = list()
     for i in range(k):
-        bit_vector = ''
+        bit_vector = ""
         for j in range(k):
             if i == j:
-                bit_vector += '1'
+                bit_vector += "1"
             else:
-                bit_vector += '0'
+                bit_vector += "0"
         column_list.append(bit_vector)
     return column_list
 
@@ -105,14 +104,14 @@ def ratio_of_guess(true_value_list, guess_value_list):
 
 def decimal_to_binary(decimal_num, k):
     if decimal_num == 0:
-        return '0' * k
-    binary_num = ''
+        return "0" * k
+    binary_num = ""
     while decimal_num > 0:
         remainder = decimal_num % 2
         binary_num = str(remainder) + binary_num
         decimal_num = decimal_num // 2
     if len(binary_num) < k:
-        padding = '0' * (k - len(binary_num))
+        padding = "0" * (k - len(binary_num))
         binary_num = padding + binary_num
     return binary_num
 
@@ -122,7 +121,7 @@ def create_rappor_emission_matrix(self, rappor, seed):
 
     column_value_list = create_emission_matrix_column(self.k)
 
-    keep_bit_prob = ((rappor.p ** 2) + (rappor.q ** 2)) if rappor.is_memoized else rappor.p
+    keep_bit_prob = ((rappor.p**2) + (rappor.q**2)) if rappor.is_memoized else rappor.p
     flip_bit_prob = (2 * rappor.p * rappor.q) if rappor.is_memoized else rappor.q
 
     order = 0
@@ -181,7 +180,12 @@ def create_rappor_emission_matrix(self, rappor, seed):
                 for column_index in range(len(revised_column_dict_order[column])):
                     prob = 1
                     for char_index in range(len(row)):
-                        if row[char_index] == revised_column_dict_order[column][column_index][char_index]:
+                        if (
+                            row[char_index]
+                            == revised_column_dict_order[column][column_index][
+                                char_index
+                            ]
+                        ):
                             prob *= keep_bit_prob
                         else:
                             prob *= flip_bit_prob
@@ -210,16 +214,16 @@ def calculate_prob(k, p, q, q_counter):
 
 
 def find_bit_vector_with_q_counter(bit_vector, k, q_counter):
-    res_bit_vector = ''
+    res_bit_vector = ""
 
     for i in range(k):
         if q_counter < 0:
             res_bit_vector += bit_vector[i]
         else:
-            if bit_vector[i] == '0':
-                res_bit_vector += '1'
+            if bit_vector[i] == "0":
+                res_bit_vector += "1"
             else:
-                res_bit_vector += '0'
+                res_bit_vector += "0"
             q_counter -= 1
 
     return res_bit_vector
@@ -238,13 +242,14 @@ def calculate_q_counter(k, report):
 
 def find_closest_hidden_state(k, report, dict_order):
     bit_vector = decimal_to_binary(report, k)
-    q_counter = k//4 + 1
+    q_counter = k // 4 + 1
     while q_counter < k:
         for element in flip_bits(bit_vector, q_counter):
             if element in dict_order:
                 return bit_vector
         q_counter += 1
     return 0
+
 
 def flip_bits(binary_number, alpha_number):
     # Convert binary number to a list of integers
@@ -269,4 +274,3 @@ def flip_bits(binary_number, alpha_number):
         new_binary_numbers.append("".join(map(str, new_binary)))
 
     return new_binary_numbers
-

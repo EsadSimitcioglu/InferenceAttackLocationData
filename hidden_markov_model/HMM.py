@@ -5,18 +5,21 @@ import xxhash
 from hmmlearn import hmm
 
 from LDP.helper import binary_to_decimal
-from hidden_markov_model.helper import getAdjacent, analyze_taken_path, create_emission_matrix_rows, \
-    create_emission_matrix_column, decimal_to_binary, calculate_prob, calculate_q_counter, find_closest_hidden_state, \
-    find_bit_vector_with_q_counter, flip_bits
+from hidden_markov_model.helper import (
+    getAdjacent,
+    analyze_taken_path,
+    create_emission_matrix_column,
+    decimal_to_binary,
+    flip_bits,
+)
 
 
 class HMM:
-
     def __init__(self, k, epsilon):
         self.k = k
         self.epsilon = epsilon
-        self.model = hmm.MultinomialHMM(n_components=k, algorithm='viterbi')
-        self.grid = np.arange(k).reshape(1, 5)
+        self.model = hmm.MultinomialHMM(n_components=k, algorithm="viterbi")
+        self.grid = np.arange(k).reshape(4, 5)
 
         self.is_bit_vector = True
 
@@ -25,16 +28,26 @@ class HMM:
     def guess_user_values(self, protocol, user_perturbed_report):
         obs_sequence_list = []
         for perturbed_report in user_perturbed_report:
-
-            if protocol.name == 'rapporOld' or protocol.name == 'oueOld':
+            if protocol.name == "rapporOld" or protocol.name == "oueOld":
                 obs_sequence_list.append(perturbed_report)
             else:
                 if protocol.is_bit_vector:
-                    if decimal_to_binary(perturbed_report, protocol.k) in self.dict_order:
-                        obs_sequence_list.append(self.dict_order[decimal_to_binary(perturbed_report, protocol.k)])
+                    if (
+                        decimal_to_binary(perturbed_report, protocol.k)
+                        in self.dict_order
+                    ):
+                        obs_sequence_list.append(
+                            self.dict_order[
+                                decimal_to_binary(perturbed_report, protocol.k)
+                            ]
+                        )
                     else:
                         random_number = np.random.randint(1, self.k + 1)
-                        obs_sequence_list.append(self.dict_order[decimal_to_binary(random_number, protocol.k)])
+                        obs_sequence_list.append(
+                            self.dict_order[
+                                decimal_to_binary(random_number, protocol.k)
+                            ]
+                        )
                 else:
                     obs_sequence_list.append(perturbed_report)
 
@@ -177,26 +190,28 @@ class HMM:
             row = emission_prob_list[row_index]
             sum_row = sum(row)
             for column_index in range(len(row)):
-                emission_prob_list[row_index][column_index] = emission_prob_list[row_index][column_index] / sum_row
+                emission_prob_list[row_index][column_index] = (
+                    emission_prob_list[row_index][column_index] / sum_row
+                )
 
         self.dict_order = q_counter_to_value_dict
         self.model.emissionprob_ = np.array(emission_prob_list)
 
     def create_rapporOld_emission_matrix(self, rappor, seed):
         rappor_report_list = list()
-        for x in range(2 ** self.k):
+        for x in range(2**self.k):
             rappor_report_list.append((bin(x)[2:].zfill(self.k)))
 
         gc.collect()
 
         user_value_list = list()
         for i in range(self.k):
-            bit_vector = ''
+            bit_vector = ""
             for j in range(self.k):
                 if i == j:
-                    bit_vector += '1'
+                    bit_vector += "1"
                 else:
-                    bit_vector += '0'
+                    bit_vector += "0"
             user_value_list.append(bit_vector)
 
         gc.collect()
@@ -225,17 +240,17 @@ class HMM:
 
     def create_oueOld_emission_matrix(self, oue, seed):
         oue_report_list = list()
-        for x in range(2 ** self.k):
+        for x in range(2**self.k):
             oue_report_list.append((bin(x)[2:].zfill(self.k)))
 
         user_value_list = list()
         for i in range(self.k):
-            bit_vector = ''
+            bit_vector = ""
             for j in range(self.k):
                 if i == j:
-                    bit_vector += '1'
+                    bit_vector += "1"
                 else:
-                    bit_vector += '0'
+                    bit_vector += "0"
             user_value_list.append(bit_vector)
 
         emission_prob_list = list()
@@ -246,14 +261,14 @@ class HMM:
                 column = oue_report_list[column_index]
                 prob = 1
                 for char_index in range(len(row)):
-                    if row[char_index] == '1':
+                    if row[char_index] == "1":
                         if row[char_index] == column[char_index]:
                             prob *= oue.p
                         else:
-                            prob *= (1 - oue.p)
+                            prob *= 1 - oue.p
                     else:
                         if row[char_index] == column[char_index]:
-                            prob *= (1 - oue.q)
+                            prob *= 1 - oue.q
                         else:
                             prob *= oue.q
                 row_prob_list.append(prob)
@@ -308,7 +323,9 @@ class HMM:
             row = emission_prob_list[row_index]
             sum_row = sum(row)
             for column_index in range(len(row)):
-                emission_prob_list[row_index][column_index] = emission_prob_list[row_index][column_index] / sum_row
+                emission_prob_list[row_index][column_index] = (
+                    emission_prob_list[row_index][column_index] / sum_row
+                )
 
         self.dict_order = q_counter_to_value_dict
         self.model.emissionprob_ = np.array(emission_prob_list)
@@ -317,7 +334,9 @@ class HMM:
         matrix_list = []
         for obs_state in range(self.k):
             row_list = []
-            hash_value_of_obs_state = (xxhash.xxh32(str(obs_state), seed=seed).intdigest() % olh.g)
+            hash_value_of_obs_state = (
+                xxhash.xxh32(str(obs_state), seed=seed).intdigest() % olh.g
+            )
             for hidden_state in range(olh.g):
                 if hash_value_of_obs_state == hidden_state:
                     row_list.append(olh.p)
@@ -328,7 +347,6 @@ class HMM:
         self.model.emissionprob_ = np.array(matrix_list)
 
     def create_hbv_emission_matrix(self, hbv, seed):
-
         hidden_state_list = create_emission_matrix_column(hbv.g)
         revised_column_dict_order = defaultdict(lambda: -1)
         q_counter_to_value_dict = defaultdict(lambda: -1)
@@ -375,7 +393,9 @@ class HMM:
             row = emission_prob_list[row_index]
             sum_row = sum(row)
             for column_index in range(len(row)):
-                emission_prob_list[row_index][column_index] = emission_prob_list[row_index][column_index] / sum_row
+                emission_prob_list[row_index][column_index] = (
+                    emission_prob_list[row_index][column_index] / sum_row
+                )
 
         self.dict_order = q_counter_to_value_dict
         self.model.emissionprob_ = np.array(emission_prob_list)

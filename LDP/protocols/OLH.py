@@ -1,9 +1,10 @@
 import numpy as np
 import xxhash
 
+from LDP.helper import normalize_distribution
+
 
 class OLH:
-
     def __init__(self, k, epsilon):
         self.name = "olh"
         self.k = k
@@ -44,10 +45,7 @@ class OLH:
         # Ensure non-negativity of estimated frequency
         est_freq = np.array((count_report - n * self.q) / (self.p - self.q)).clip(0)
 
-        # Re-normalized estimated frequency
-        norm_est_freq = np.nan_to_num(est_freq / sum(est_freq))
-
-        return norm_est_freq
+        return normalize_distribution(est_freq)
 
     def memoized(self, input_list, seed):
         user_list = list()
@@ -75,8 +73,6 @@ class OLH:
             else:
                 user_list.append(memoization_dict[input_data])
         return user_list
-
-
 
     def memoized_recall(self, input_list, seed):
         user_list = list()

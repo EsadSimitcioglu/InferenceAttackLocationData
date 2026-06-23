@@ -1,12 +1,11 @@
 import numpy as np
 
-from LDP.helper import binary_to_decimal
+from LDP.helper import bit_vector_to_decimal, normalize_distribution
 
 
 class RAPPOR:
-
     def __init__(self, k, epsilon):
-        self.name = 'rappor'
+        self.name = "rappor"
         self.k = k
         self.epsilon = epsilon
         self.p = (np.exp(epsilon / 2)) / (np.exp(epsilon / 2) + 1)
@@ -17,8 +16,7 @@ class RAPPOR:
         self.is_memoized = True
 
     def client(self, input_data):
-
-        if not isinstance(input_data, list):
+        if not isinstance(input_data, (list, np.ndarray)):
             bit_vector = np.zeros(self.k)
             bit_vector[input_data - 1] = 1
         else:
@@ -48,17 +46,10 @@ class RAPPOR:
             denominator = self.p - self.q
             est_freq_vector.append(numerator / denominator)
 
-        # Re-normalized estimated frequencies
-        norm_est_freq = np.nan_to_num(est_freq_vector / sum(est_freq_vector))
-
-        return norm_est_freq
+        return normalize_distribution(np.array(est_freq_vector))
 
     def convert_binary_report_to_decimal(self, perturbed_trajectory):
-        report_string = str()
-        for index in perturbed_trajectory:
-            report_string += str(int(index))
-        report = (binary_to_decimal(report_string))
-        return report
+        return bit_vector_to_decimal(perturbed_trajectory)
 
     def memoized(self, input_list):
         perturbed_list = []
@@ -75,7 +66,10 @@ class RAPPOR:
                 else:
                     user_list.append(self.client(memoization_dict[input_data]))
                 prev_value = input_data
-            report = [self.convert_binary_report_to_decimal(report_string) for report_string in user_list]
+            report = [
+                self.convert_binary_report_to_decimal(report_string)
+                for report_string in user_list
+            ]
             perturbed_list.append(report)
 
         return perturbed_list
@@ -93,7 +87,10 @@ class RAPPOR:
                     user_list.append(fake_input_data)
                 else:
                     user_list.append(self.client(memoization_dict[input_data]))
-            report = [self.convert_binary_report_to_decimal(report_string) for report_string in user_list]
+            report = [
+                self.convert_binary_report_to_decimal(report_string)
+                for report_string in user_list
+            ]
             perturbed_list.append(report)
 
         return perturbed_list
@@ -113,8 +110,10 @@ class RAPPOR:
                 else:
                     user_list.append(prev_fake_value)
                 prev_value = input_data
-            report = [self.convert_binary_report_to_decimal(report_string) for report_string in user_list]
+            report = [
+                self.convert_binary_report_to_decimal(report_string)
+                for report_string in user_list
+            ]
             perturbed_list.append(report)
 
         return perturbed_list
-

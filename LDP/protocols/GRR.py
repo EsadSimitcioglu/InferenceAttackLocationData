@@ -1,10 +1,11 @@
 import numpy as np
 
+from LDP.helper import normalize_distribution
+
 
 class GRR:
-
     def __init__(self, k, epsilon):
-        self.name = 'grr'
+        self.name = "grr"
         self.k = k
         self.epsilon = epsilon
         self.p = np.exp(epsilon) / (np.exp(epsilon) + k - 1)
@@ -14,26 +15,18 @@ class GRR:
         self.is_hash_used = False
 
     def client(self, input_data):
-        # GRR parameters
-        p = np.exp(self.epsilon) / (np.exp(self.epsilon) + self.k - 1)
-
         # Mapping domain size k to the range [0, ..., k-1]
         domain = np.arange(0, self.k)
 
         # GRR perturbation function
         rnd = np.random.random()
-        if rnd <= p:
+        if rnd <= self.p:
             return input_data - 1
-        else:
-            return np.random.choice(domain[domain != input_data] - 1)
+        return np.random.choice(domain[domain != input_data] - 1)
 
     def server(self, reports):
         # Number of reports
         n = len(reports)
-
-        # GRR parameters
-        p = np.exp(self.epsilon) / (np.exp(self.epsilon) + self.k - 1)
-        q = (1 - p) / (self.k - 1)
 
         # Count how many times each value has been reported
         count_report = np.zeros(self.k)
@@ -41,12 +34,8 @@ class GRR:
             count_report[rep] += 1
 
         # Ensure non-negativity of estimated frequency
-        est_freq = np.array((count_report - n * q) / (p - q)).clip(0)
-
-        # Re-normalized estimated frequency
-        norm_est_freq = np.nan_to_num(est_freq / sum(est_freq))
-
-        return norm_est_freq
+        est_freq = np.array((count_report - n * self.q) / (self.p - self.q)).clip(0)
+        return normalize_distribution(est_freq)
 
     def memoized(self, input_list):
         perturbed_list = list()
@@ -58,7 +47,7 @@ class GRR:
             for input_data in user_trajectory:
                 if input_data != prev_value:
                     fake_input_value = self.client(input_data)
-                    memoization_dict[input_data] = fake_input_value+1
+                    memoization_dict[input_data] = fake_input_value + 1
                     user_list.append(self.client(fake_input_value))
                 else:
                     user_list.append(self.client(memoization_dict[input_data]))

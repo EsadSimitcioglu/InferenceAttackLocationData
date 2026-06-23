@@ -1,10 +1,7 @@
-import csv
-from statistics import mode
 import random
 import numpy as np
 from collections import Counter
 
-from numpy import exp
 from LDP.protocols.GRR import GRR
 from LDP.protocols.RAPPOR import RAPPOR
 from LDP.protocols.OUE import OUE
@@ -57,10 +54,16 @@ def find_mode(perturbed_reports, grid_prob_dict=None):
                     user_grid_prob_list.append(1 / len(mode_list))
                 else:
                     user_grid_prob_list.append(0)
-            res_prob_list = [grid_dict_prob * grid_user_prob for grid_dict_prob, grid_user_prob in
-                             zip(grid_prob_dict, user_grid_prob_list)]
+            res_prob_list = [
+                grid_dict_prob * grid_user_prob
+                for grid_dict_prob, grid_user_prob in zip(
+                    grid_prob_dict, user_grid_prob_list
+                )
+            ]
             norm_res_prob_list = [prob / sum(res_prob_list) for prob in res_prob_list]
-            reports_mode = choose_item_from_non_normalized_probabilities(norm_res_prob_list)
+            reports_mode = choose_item_from_non_normalized_probabilities(
+                norm_res_prob_list
+            )
     else:
         reports_mode = mode_list[0]
 
@@ -72,7 +75,9 @@ def grr_estimated_guess(user_values_list, k, epsilon):
     for user_true_values in user_values_list:
         grid_number = user_true_values[0] - 1
         grr = GRR(k, epsilon)
-        grr_reports = [grr.client(user_true_value) for user_true_value in user_true_values]
+        grr_reports = [
+            grr.client(user_true_value) for user_true_value in user_true_values
+        ]
         grr_reports_mode = find_mode(grr_reports)
         if grr_reports_mode == grid_number:
             probability_per_user.append(1)
@@ -88,7 +93,9 @@ def grr_informed_guess(user_values_list, k, epsilon):
     for user_true_values in user_values_list:
         grid_number = user_true_values[0] - 1
         grr = GRR(k, epsilon)
-        grr_reports = [grr.client(user_true_value) for user_true_value in user_true_values]
+        grr_reports = [
+            grr.client(user_true_value) for user_true_value in user_true_values
+        ]
         grr_reports_mode = find_mode(grr_reports, grid_prob_dict)
         if grr_reports_mode == grid_number:
             probability_per_user.append(1)
@@ -103,7 +110,9 @@ def rappor_estimated_guess(user_values_list, k, epsilon):
     for user_true_values in user_values_list:
         grid_number = user_true_values[0] - 1
         rappor = RAPPOR(k, epsilon)
-        rappor_reports = [rappor.client(user_true_value) for user_true_value in user_true_values]
+        rappor_reports = [
+            rappor.client(user_true_value) for user_true_value in user_true_values
+        ]
         perturbed_bit_vectors = np.array(rappor_reports)
         sum_perturbed_bit_by_bit = sum(perturbed_bit_vectors)
         guess_of_grid = np.argmax(sum_perturbed_bit_by_bit)
@@ -120,19 +129,29 @@ def rappor_informed_guess(user_values_list, k, epsilon):
     for user_true_values in user_values_list:
         grid_number = user_true_values[0]
         rappor = RAPPOR(k, epsilon)
-        rappor_reports = [rappor.client(user_true_value) for user_true_value in user_true_values]
+        rappor_reports = [
+            rappor.client(user_true_value) for user_true_value in user_true_values
+        ]
         perturbed_bit_vectors = np.array(rappor_reports)
         sum_perturbed_bit_by_bit = sum(perturbed_bit_vectors)
         max_grid = max(sum_perturbed_bit_by_bit)
-        max_grid_list = [i+1 for i, val in enumerate(sum_perturbed_bit_by_bit) if val == max_grid]
+        max_grid_list = [
+            i + 1 for i, val in enumerate(sum_perturbed_bit_by_bit) if val == max_grid
+        ]
         user_grid_prob_list = [0] * k
         for grid in range(1, 21):
             if grid in max_grid_list:
-                user_grid_prob_list[grid-1] = 1 / len(max_grid_list)
-        res_prob_list = [grid_dict_prob * grid_user_prob for grid_dict_prob, grid_user_prob in
-                         zip(grid_prob_dict, user_grid_prob_list)]
+                user_grid_prob_list[grid - 1] = 1 / len(max_grid_list)
+        res_prob_list = [
+            grid_dict_prob * grid_user_prob
+            for grid_dict_prob, grid_user_prob in zip(
+                grid_prob_dict, user_grid_prob_list
+            )
+        ]
         norm_res_prob_list = [prob / sum(res_prob_list) for prob in res_prob_list]
-        guess_of_grid = choose_item_from_non_normalized_probabilities(norm_res_prob_list)
+        guess_of_grid = choose_item_from_non_normalized_probabilities(
+            norm_res_prob_list
+        )
         if guess_of_grid == grid_number:
             probability_per_user.append(1)
         else:
@@ -145,7 +164,9 @@ def oue_estimated_guess(user_values_list, k, epsilon):
     for user_true_values in user_values_list:
         grid_number = user_true_values[0] - 1
         oue = OUE(k, epsilon)
-        oue_reports = [oue.client(user_true_value) for user_true_value in user_true_values]
+        oue_reports = [
+            oue.client(user_true_value) for user_true_value in user_true_values
+        ]
         perturbed_bit_vectors = np.array(oue_reports)
         sum_perturbed_bit_by_bit = sum(perturbed_bit_vectors)
         guess_of_grid = np.argmax(sum_perturbed_bit_by_bit)
@@ -162,19 +183,29 @@ def oue_informed_guess(user_values_list, k, epsilon):
     for user_true_values in user_values_list:
         grid_number = user_true_values[0]
         oue = OUE(k, epsilon)
-        oue_reports = [oue.client(user_true_value) for user_true_value in user_true_values]
+        oue_reports = [
+            oue.client(user_true_value) for user_true_value in user_true_values
+        ]
         perturbed_bit_vectors = np.array(oue_reports)
         sum_perturbed_bit_by_bit = sum(perturbed_bit_vectors)
         max_grid = max(sum_perturbed_bit_by_bit)
-        max_grid_list = [i+1 for i, val in enumerate(sum_perturbed_bit_by_bit) if val == max_grid]
+        max_grid_list = [
+            i + 1 for i, val in enumerate(sum_perturbed_bit_by_bit) if val == max_grid
+        ]
         user_grid_prob_list = [0] * k
         for grid_val in range(1, 21):
             if grid_val in max_grid_list:
-                user_grid_prob_list[grid_val-1] = 1 / len(max_grid_list)
-        res_prob_list = [grid_dict_prob * grid_user_prob for grid_dict_prob, grid_user_prob in
-                         zip(grid_prob_dict, user_grid_prob_list)]
+                user_grid_prob_list[grid_val - 1] = 1 / len(max_grid_list)
+        res_prob_list = [
+            grid_dict_prob * grid_user_prob
+            for grid_dict_prob, grid_user_prob in zip(
+                grid_prob_dict, user_grid_prob_list
+            )
+        ]
         norm_res_prob_list = [prob / sum(res_prob_list) for prob in res_prob_list]
-        guess_of_grid = choose_item_from_non_normalized_probabilities(norm_res_prob_list)
+        guess_of_grid = choose_item_from_non_normalized_probabilities(
+            norm_res_prob_list
+        )
         if guess_of_grid == grid_number:
             probability_per_user.append(1)
         else:
@@ -190,13 +221,19 @@ def olh_estimated_guess(user_values_list, k, epsilon):
 
     for user_true_values in user_values_list:
         true_value = user_true_values[0]
-        olh_reports = [olh.client(user_true_value, seed_init) for user_true_value in user_true_values]
+        olh_reports = [
+            olh.client(user_true_value, seed_init)
+            for user_true_value in user_true_values
+        ]
         olh_reports_mode = find_mode(olh_reports)
 
         grid_list = list()
         for grid_number in range(1, k + 1):
             grid_number_power = np.repeat(grid_number, 100)
-            olh_guess_reports = [olh.client(user_true_value, seed_init) for user_true_value in grid_number_power]
+            olh_guess_reports = [
+                olh.client(user_true_value, seed_init)
+                for user_true_value in grid_number_power
+            ]
             olh_guess_mode = find_mode(olh_guess_reports)
             if olh_guess_mode == olh_reports_mode:
                 grid_list.append(grid_number)
@@ -221,7 +258,6 @@ def olh_informed_guess(user_values_list, k, epsilon):
     olh = OLH(k, epsilon)
     grid_prob_dict = analyze_dataset(user_values_list)
 
-
     for user_true_values in user_values_list:
         true_value = user_true_values[0]
         olh_reports = list()
@@ -234,12 +270,13 @@ def olh_informed_guess(user_values_list, k, epsilon):
         grid_list = list()
         for grid_number in range(1, k + 1):
             grid_number_power = np.repeat(grid_number, 100)
-            olh_guess_reports = [olh.client(user_true_value, seed_init) for user_true_value in grid_number_power]
+            olh_guess_reports = [
+                olh.client(user_true_value, seed_init)
+                for user_true_value in grid_number_power
+            ]
             olh_guess_mode = find_mode(olh_guess_reports)
             if olh_guess_mode == olh_reports_mode:
                 grid_list.append(grid_number)
-
-
 
         if len(grid_list) >= 1:
             user_grid_prob_list = list()
@@ -248,10 +285,16 @@ def olh_informed_guess(user_values_list, k, epsilon):
                     user_grid_prob_list.append(1 / len(grid_list))
                 else:
                     user_grid_prob_list.append(0)
-            res_prob_list = [grid_dict_prob * grid_user_prob for grid_dict_prob, grid_user_prob in
-                             zip(grid_prob_dict, user_grid_prob_list)]
+            res_prob_list = [
+                grid_dict_prob * grid_user_prob
+                for grid_dict_prob, grid_user_prob in zip(
+                    grid_prob_dict, user_grid_prob_list
+                )
+            ]
             norm_res_prob_list = [prob / sum(res_prob_list) for prob in res_prob_list]
-            reports_mode = choose_item_from_non_normalized_probabilities(norm_res_prob_list)
+            reports_mode = choose_item_from_non_normalized_probabilities(
+                norm_res_prob_list
+            )
             if reports_mode == true_value:
                 probability_per_user.append(1)
             else:

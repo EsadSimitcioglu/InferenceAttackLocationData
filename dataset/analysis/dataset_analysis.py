@@ -1,12 +1,7 @@
-import csv
-
-import numpy as np
-
 row_count = 4
 
 
 def analyze_taken_path(users_grid_value_list):
-
     path_dict = {}
     for user_value in users_grid_value_list:
         for value_index, value in enumerate(user_value):
@@ -39,7 +34,6 @@ def analyze_not_taken_path(analyzed_path_dict):
         for row in range(1, 6):
             value += 1
             if value == 1:
-
                 path = str(value) + "->" + str(value + 1)
 
                 if path not in analyzed_path_dict:
@@ -56,7 +50,6 @@ def analyze_not_taken_path(analyzed_path_dict):
                     untaken_dict[path] = 1
 
             elif value == 17:
-
                 path = str(value) + "->" + str(value + 1)
 
                 if path not in analyzed_path_dict:
@@ -211,21 +204,33 @@ def check_possibility(perturb_value_list, row_count):
         prev_grid_location = perturb_value_list[value_index - 1]
 
         if value % row_count == 1:
-            if prev_grid_location in [value, value + 1] or (
-                    prev_grid_location in [value - row_count, value - row_count + 1]) or (
-                    prev_grid_location in [value + row_count, value + row_count + 1]):
+            if (
+                prev_grid_location in [value, value + 1]
+                or (prev_grid_location in [value - row_count, value - row_count + 1])
+                or (prev_grid_location in [value + row_count, value + row_count + 1])
+            ):
                 possibility_list.append(1)
                 continue
         elif value % row_count == 0:
-            if prev_grid_location in [value, value - 1] or (
-                    prev_grid_location in [value - row_count, value - row_count - 1]) or (
-                    prev_grid_location in [value + row_count, value + row_count - 1]):
+            if (
+                prev_grid_location in [value, value - 1]
+                or (prev_grid_location in [value - row_count, value - row_count - 1])
+                or (prev_grid_location in [value + row_count, value + row_count - 1])
+            ):
                 possibility_list.append(1)
                 continue
         else:
-            if (prev_grid_location in [value - 1, value, value + 1]) or \
-                    (prev_grid_location in [value - row_count - 1, value - row_count, value - row_count + 1]) or \
-                    (prev_grid_location in [value + row_count - 1, value + row_count, value + row_count + 1]):
+            if (
+                (prev_grid_location in [value - 1, value, value + 1])
+                or (
+                    prev_grid_location
+                    in [value - row_count - 1, value - row_count, value - row_count + 1]
+                )
+                or (
+                    prev_grid_location
+                    in [value + row_count - 1, value + row_count, value + row_count + 1]
+                )
+            ):
                 possibility_list.append(1)
                 continue
         possibility_list.append(0)

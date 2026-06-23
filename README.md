@@ -1,6 +1,17 @@
 
 # Inference Attack On Location Data
 
+## Environment
+
+This repository now includes a `uv` project definition in [pyproject.toml](/Users/esatsimitcioglu/Desktop/InferenceAttackLocationData/pyproject.toml).
+
+Typical setup:
+
+```bash
+uv sync
+uv run python results_with_plots.py
+```
+
 
 ## Experiments
 

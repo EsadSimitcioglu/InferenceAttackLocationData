@@ -1,0 +1,29 @@
+[project]
+name = "inference-attack-location-data"
+version = "0.1.0"
+description = "Research code for inference attacks on perturbed location trajectories."
+readme = "README.md"
+requires-python = ">=3.9,<3.10"
+dependencies = [
+    "pybind11==2.9.2",
+    "hmmlearn==0.2.7",
+    "numpy<2",
+    "scipy<2",
+    "scikit-learn<1.4",
+    "matplotlib",
+    "pandas",
+    "pillow",
+    "shapely",
+    "xxhash",
+]
+
+[tool.uv]
+package = false
+build-constraint-dependencies = [
+    "pybind11==2.9.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
