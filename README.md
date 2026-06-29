@@ -3,7 +3,7 @@
 Official implementation for the published paper:
 
 > **[Privacy risks of continuous location sharing under local differential privacy: Inference attacks and defenses]**  
-> [Muhammed Esad Simitcioglu], [Emre Gursoy], [Author 3]  
+> [Muhammed Esad Simitcioglu], [Emre Gursoy]
 > *[Computer Networks]*, [2026/4/23]
 
 [`Paper link`](https://doi.org/10.1016/j.comnet.2026.112333)
